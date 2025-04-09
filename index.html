@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Garagem Inteligente PRO - Unificada</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Favicon (opcional) -->
+    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
+  </head>
+  <body>
+    <!-- Cabeçalho Principal -->
+    <header class="main-header">
+      <h1>Garagem Inteligente PRO 🚗💨</h1>
+      <p>Gerenciamento Completo de Veículos e Manutenções</p>
+    </header>
+
+    <!-- Corpo Principal -->
+    <div class="main-content-area">
+      <!-- Coluna da Sidebar (Lista de Veículos) -->
+      <aside id="sidebar">
+        <h3>Minha Garagem</h3>
+        <ul id="vehicle-list" aria-live="polite">
+          <!-- Lista de veículos será populada pelo JavaScript -->
+          <li class="placeholder">Nenhum veículo na garagem.</li>
+        </ul>
+        <button id="btn-show-add-vehicle-form" class="btn btn-create">
+          + Adicionar Novo Veículo
+        </button>
+      </aside>
+
+      <!-- Coluna do Painel Principal (Detalhes / Formulário Adicionar) -->
+      <main id="main-panel">
+        <div id="panel-content">
+          <!-- 1. Estado Padrão / Placeholder -->
+          <div id="panel-placeholder" class="info-panel placeholder-panel">
+            <p>
+              ⬅️ Selecione um veículo na lista ou clique em "+ Adicionar Novo
+              Veículo".
+            </p>
+          </div>
+
+          <!-- 2. Estado: Exibindo Detalhes do Veículo Selecionado -->
+          <div id="vehicle-details-view" class="hidden">
+            <header id="vehicle-detail-header" class="detail-header">
+              <img
+                id="detail-vehicle-img"
+                src="placeholder.png"
+                alt="Veículo Selecionado"
+                class="detail-vehicle-image"
+                onerror="this.src='placeholder.png';"
+              />
+              <h2 id="detail-vehicle-name">Nome do Veículo</h2>
+              <!-- Pequeno formulário para editar nome/cor/imagem rapidamente -->
+              <div class="quick-edit-props">
+                <input
+                  type="text"
+                  id="quick-edit-model"
+                  placeholder="Modelo (Obrigatório)"
+                  aria-label="Editar Modelo do Veículo"
+                  required
+                />
+                <input
+                  type="text"
+                  id="quick-edit-color"
+                  placeholder="Cor (Obrigatório)"
+                  aria-label="Editar Cor do Veículo"
+                  required
+                />
+                <input
+                  type="text"
+                  id="quick-edit-image"
+                  placeholder="URL Imagem (Opcional)"
+                  aria-label="Editar URL da Imagem do Veículo"
+                />
+                <button
+                  id="btn-save-quick-edit"
+                  class="btn btn-action btn-small"
+                  title="Salvar Alterações Rápidas"
+                >
+                  💾 Salvar
+                </button>
+              </div>
+            </header>
+
+            <!-- Navegação por Abas -->
+            <nav id="vehicle-tabs-nav" class="tab-nav" role="tablist">
+              <button
+                class="tab-link active"
+                data-target="#tab-info"
+                role="tab"
+                aria-selected="true"
+                aria-controls="tab-info"
+              >
+                Informações
+              </button>
+              <button
+                class="tab-link"
+                data-target="#tab-actions"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-actions"
+              >
+                Ações
+              </button>
+              <button
+                class="tab-link"
+                data-target="#tab-register-maint"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-register-maint"
+              >
+                Registrar Manutenção
+              </button>
+              <button
+                class="tab-link"
+                data-target="#tab-schedule-maint"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-schedule-maint"
+              >
+                Agendar Serviço
+              </button>
+            </nav>
+
+            <!-- Conteúdo das Abas -->
+            <div id="tab-content-container">
+              <!-- Aba: Informações -->
+              <div
+                id="tab-info"
+                class="tab-content active"
+                role="tabpanel"
+                aria-labelledby="tab-info"
+              >
+                <h4>Detalhes e Status</h4>
+                <div id="info-details-content" class="info-panel">
+                  <!-- Conteúdo gerado pelo JS -->
+                </div>
+                <h4>Histórico de Manutenção</h4>
+                <div
+                  id="info-history-content"
+                  class="info-panel maintenance-list-container"
+                >
+                  <!-- Lista gerada pelo JS -->
+                </div>
+                <h4>Agendamentos Futuros</h4>
+                <div
+                  id="info-schedule-content"
+                  class="info-panel schedule-list-container"
+                >
+                  <!-- Lista gerada pelo JS -->
+                </div>
+              </div>
+
+              <!-- Aba: Ações -->
+              <div
+                id="tab-actions"
+                class="tab-content"
+                role="tabpanel"
+                aria-labelledby="tab-actions"
+              >
+                <h4>Controles do Veículo</h4>
+                <fieldset>
+                  <legend>Motor e Movimento</legend>
+                  <div class="button-container action-buttons">
+                    {/* IDs adicionados para referência, mas onclick é usado */}
+                    <button
+                      id="btn-ligar"
+                      onclick="handleLigarClick()"
+                      title="Ligar Motor"
+                      class="btn btn-action"
+                    >
+                      Ligar
+                    </button>
+                    <button
+                      id="btn-desligar"
+                      onclick="handleDesligarClick()"
+                      title="Desligar Motor"
+                      class="btn btn-action"
+                    >
+                      Desligar
+                    </button>
+                    <button
+                      id="btn-acelerar"
+                      onclick="handleAcelerarClick()"
+                      title="Acelerar"
+                      class="btn btn-action"
+                    >
+                      Acelerar
+                    </button>
+                    <button
+                      id="btn-frear"
+                      onclick="handleFrearClick()"
+                      title="Frear"
+                      class="btn btn-action"
+                    >
+                      Frear
+                    </button>
+                    <button
+                      id="btn-buzinar"
+                      onclick="handleBuzinarClick()"
+                      title="Buzinar"
+                      class="btn btn-action"
+                    >
+                      Buzinar
+                    </button>
+                  </div>
+                  <div class="input-group inline-action">
+                    <label for="distanciaRodar">Rodar:</label>
+                    <input
+                      type="number"
+                      id="distanciaRodar"
+                      value="100"
+                      min="1"
+                      class="input-small"
+                      aria-label="Distância a rodar em KM"
+                      required
+                    />
+                    <span>km</span>
+                    <button
+                      id="btn-rodar"
+                      onclick="handleRodarClick()"
+                      title="Simular rodagem"
+                      class="btn btn-action"
+                    >
+                      Ir
+                    </button>
+                  </div>
+                </fieldset>
+                <!-- Ações Específicas -->
+                <fieldset
+                  id="actions-esportivo"
+                  class="specific-actions hidden"
+                >
+                  <legend>Controles Esportivo</legend>
+                  <div class="button-container action-buttons">
+                    <button
+                      id="btn-turbo-on"
+                      onclick="handleTurboOnClick()"
+                      title="Ativar Turbo"
+                      class="btn btn-action"
+                    >
+                      Turbo ON
+                    </button>
+                    <button
+                      id="btn-turbo-off"
+                      onclick="handleTurboOffClick()"
+                      title="Desativar Turbo"
+                      class="btn btn-action"
+                    >
+                      Turbo OFF
+                    </button>
+                  </div>
+                </fieldset>
+                <fieldset id="actions-caminhao" class="specific-actions hidden">
+                  <legend>Controles Caminhão</legend>
+                  <div class="input-group inline-action">
+                    <label for="pesoCarga">Carga/Descarga:</label>
+                    <input
+                      type="number"
+                      id="pesoCarga"
+                      value="1000"
+                      min="1"
+                      class="input-medium"
+                      aria-label="Peso da carga em KG"
+                      required
+                    />
+                    <span>kg</span>
+                    <button
+                      id="btn-carregar"
+                      onclick="handleCarregarClick()"
+                      title="Carregar"
+                      class="btn btn-action"
+                    >
+                      Carregar
+                    </button>
+                    <button
+                      id="btn-descarregar"
+                      onclick="handleDescarregarClick()"
+                      title="Descarregar"
+                      class="btn btn-action"
+                    >
+                      Descarregar
+                    </button>
+                  </div>
+                </fieldset>
+              </div>
+
+              <!-- Aba: Registrar Manutenção -->
+              <div
+                id="tab-register-maint"
+                class="tab-content"
+                role="tabpanel"
+                aria-labelledby="tab-register-maint"
+              >
+                <h4>Registrar Serviço Realizado</h4>
+                <fieldset class="maintenance-forms">
+                  <form
+                    id="register-maint-form"
+                    class="maintenance-section registration-form"
+                  >
+                    <div class="input-group">
+                      <label for="manutTipo">Tipo:</label>
+                      <input
+                        type="text"
+                        id="manutTipo"
+                        placeholder="Ex: Troca de Óleo"
+                        required
+                      />
+                    </div>
+                    <div class="input-group">
+                      <label for="manutCusto">Custo (R$):</label>
+                      <input
+                        type="text"
+                        id="manutCusto"
+                        placeholder="Ex: 150.00 ou 150,00"
+                        required
+                        pattern="^\d+([,.]\d{1,2})?$"
+                        inputmode="decimal"
+                      />
+                    </div>
+                    <div class="input-group">
+                      <label for="manutDesc">Descrição:</label>
+                      <input
+                        type="text"
+                        id="manutDesc"
+                        placeholder="Detalhes adicionais (opcional)"
+                      />
+                    </div>
+                    <div class="button-container">
+                      <button
+                        type="button"
+                        onclick="handleRegistrarManutencao()"
+                        class="btn btn-maintenance"
+                      >
+                        Registrar Agora
+                      </button>
+                    </div>
+                  </form>
+                </fieldset>
+              </div>
+
+              <!-- Aba: Agendar Serviço -->
+              <div
+                id="tab-schedule-maint"
+                class="tab-content"
+                role="tabpanel"
+                aria-labelledby="tab-schedule-maint"
+              >
+                <h4>Agendar Serviço Futuro</h4>
+                <fieldset class="maintenance-forms">
+                  <form
+                    id="schedule-maint-form"
+                    class="maintenance-section agendamento-form"
+                  >
+                    <div class="input-group">
+                      <label for="agendamentoData">Data/Hora:</label>
+                      <input
+                        type="datetime-local"
+                        id="agendamentoData"
+                        required
+                      />
+                    </div>
+                    <div class="input-group">
+                      <label for="agendamentoTipo">Tipo Serviço:</label>
+                      <input
+                        type="text"
+                        id="agendamentoTipo"
+                        placeholder="Ex: Revisão Preventiva"
+                        required
+                      />
+                    </div>
+                    <div class="input-group">
+                      <label for="agendamentoDesc">Observações:</label>
+                      <input
+                        type="text"
+                        id="agendamentoDesc"
+                        placeholder="Lembretes (opcional)"
+                      />
+                    </div>
+                    <div class="button-container">
+                      <button
+                        type="button"
+                        onclick="handleAgendarManutencao()"
+                        class="btn btn-schedule"
+                      >
+                        Agendar
+                      </button>
+                    </div>
+                  </form>
+                </fieldset>
+              </div>
+            </div>
+            <!-- Fim #tab-content-container -->
+
+            <!-- Botão de Excluir -->
+            <div class="delete-area">
+              <button id="btn-delete-vehicle" class="btn btn-danger">
+                Excluir Veículo
+              </button>
+            </div>
+          </div>
+          <!-- Fim #vehicle-details-view -->
+
+          <!-- 3. Estado: Formulário para Adicionar Novo Veículo -->
+          <div id="add-vehicle-form-view" class="hidden">
+            <h2>Adicionar Novo Veículo</h2>
+            <form id="add-vehicle-form">
+              <div class="input-group">
+                <label for="add-vehicle-type">Tipo:</label>
+                <select id="add-vehicle-type" required>
+                  <option value="" disabled selected>
+                    Selecione o tipo...
+                  </option>
+                  <option value="Carro">Carro Comum</option>
+                  <option value="CarroEsportivo">Carro Esportivo</option>
+                  <option value="Caminhao">Caminhão</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="add-modelo">Modelo:</label>
+                <input
+                  type="text"
+                  id="add-modelo"
+                  required
+                  placeholder="Ex: Sedan X"
+                />
+              </div>
+              <div class="input-group">
+                <label for="add-cor">Cor:</label>
+                <input
+                  type="text"
+                  id="add-cor"
+                  required
+                  placeholder="Ex: Azul Metálico"
+                />
+              </div>
+              <div class="input-group">
+                <label for="add-imagem">Imagem URL:</label>
+                <input
+                  type="text"
+                  id="add-imagem"
+                  placeholder="http://... (Opcional)"
+                />
+              </div>
+              <!-- Campo Específico Caminhão -->
+              <div
+                class="input-group specific-field hidden"
+                data-type="Caminhao"
+              >
+                <label for="add-capacidade">Capacidade (kg):</label>
+                <!-- 'required' é gerenciado por JS -->
+                <input
+                  type="number"
+                  id="add-capacidade"
+                  value="10000"
+                  min="0"
+                  placeholder="Ex: 10000"
+                  inputmode="numeric"
+                />
+              </div>
+              <div class="button-container form-buttons">
+                <button type="submit" class="btn btn-create">
+                  Salvar Novo Veículo
+                </button>
+                <button
+                  type="button"
+                  id="btn-cancel-add-vehicle"
+                  class="btn btn-secondary"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+          <!-- Fim #add-vehicle-form-view -->
+        </div>
+        <!-- Fim #panel-content -->
+      </main>
+      <!-- Fim #main-panel -->
+    </div>
+    <!-- Fim .main-content-area -->
+
+    <!-- Rodapé -->
+    <footer class="main-footer">
+      <p>Projeto Garagem Inteligente © 2024</p>
+    </footer>
+
+    <!-- Área para Notificações (JS) -->
+    <div id="notification-area" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+  </body>
+</html>
