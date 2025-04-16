@@ -1,3 +1,8 @@
+import Manutencao from './Manutencao.js';
+import Veiculo from './Veiculo.js';
+import Carro from './Carro.js';
+import CarroEsportivo from './CarroEsportivo.js';
+import Caminhao from './Caminhao.js';
 // ==========================================================================
 //                 GARAGEM INTELIGENTE PRO - SCRIPT UNIFICADO
 //                      (v3.2 - UX Refinements & Docs)

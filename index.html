@@ -163,229 +163,88 @@
                 <fieldset>
                   <legend>Motor e Movimento</legend>
                   <div class="button-container action-buttons">
-                    {/* IDs adicionados para referência, mas onclick é usado */}
-                    <button
-                      id="btn-ligar"
-                      onclick="handleLigarClick()"
-                      title="Ligar Motor"
-                      class="btn btn-action"
-                    >
-                      Ligar
-                    </button>
-                    <button
-                      id="btn-desligar"
-                      onclick="handleDesligarClick()"
-                      title="Desligar Motor"
-                      class="btn btn-action"
-                    >
-                      Desligar
-                    </button>
-                    <button
-                      id="btn-acelerar"
-                      onclick="handleAcelerarClick()"
-                      title="Acelerar"
-                      class="btn btn-action"
-                    >
-                      Acelerar
-                    </button>
-                    <button
-                      id="btn-frear"
-                      onclick="handleFrearClick()"
-                      title="Frear"
-                      class="btn btn-action"
-                    >
-                      Frear
-                    </button>
-                    <button
-                      id="btn-buzinar"
-                      onclick="handleBuzinarClick()"
-                      title="Buzinar"
-                      class="btn btn-action"
-                    >
-                      Buzinar
-                    </button>
+                    <!-- IDs são mantidos, mas onclick="" foi REMOVIDO -->
+                    <button id="btn-ligar" title="Ligar Motor" class="btn btn-action">Ligar</button>
+                    <button id="btn-desligar" title="Desligar Motor" class="btn btn-action">Desligar</button>
+                    <button id="btn-acelerar" title="Acelerar" class="btn btn-action">Acelerar</button>
+                    <button id="btn-frear" title="Frear" class="btn btn-action">Frear</button>
+                    <button id="btn-buzinar" title="Buzinar" class="btn btn-action">Buzinar</button>
                   </div>
                   <div class="input-group inline-action">
                     <label for="distanciaRodar">Rodar:</label>
-                    <input
-                      type="number"
-                      id="distanciaRodar"
-                      value="100"
-                      min="1"
-                      class="input-small"
-                      aria-label="Distância a rodar em KM"
-                      required
-                    />
+                    <input type="number" id="distanciaRodar" value="100" min="1" class="input-small" aria-label="Distância a rodar em KM" required/>
                     <span>km</span>
-                    <button
-                      id="btn-rodar"
-                      onclick="handleRodarClick()"
-                      title="Simular rodagem"
-                      class="btn btn-action"
-                    >
-                      Ir
-                    </button>
+                    <!-- onclick="" foi REMOVIDO -->
+                    <button id="btn-rodar" title="Simular rodagem" class="btn btn-action">Ir</button>
                   </div>
                 </fieldset>
                 <!-- Ações Específicas -->
-                <fieldset
-                  id="actions-esportivo"
-                  class="specific-actions hidden"
-                >
+                <fieldset id="actions-esportivo" class="specific-actions hidden">
                   <legend>Controles Esportivo</legend>
                   <div class="button-container action-buttons">
-                    <button
-                      id="btn-turbo-on"
-                      onclick="handleTurboOnClick()"
-                      title="Ativar Turbo"
-                      class="btn btn-action"
-                    >
-                      Turbo ON
-                    </button>
-                    <button
-                      id="btn-turbo-off"
-                      onclick="handleTurboOffClick()"
-                      title="Desativar Turbo"
-                      class="btn btn-action"
-                    >
-                      Turbo OFF
-                    </button>
+                     <!-- onclick="" foi REMOVIDO -->
+                    <button id="btn-turbo-on" title="Ativar Turbo" class="btn btn-action">Turbo ON</button>
+                    <button id="btn-turbo-off" title="Desativar Turbo" class="btn btn-action">Turbo OFF</button>
                   </div>
                 </fieldset>
                 <fieldset id="actions-caminhao" class="specific-actions hidden">
                   <legend>Controles Caminhão</legend>
                   <div class="input-group inline-action">
                     <label for="pesoCarga">Carga/Descarga:</label>
-                    <input
-                      type="number"
-                      id="pesoCarga"
-                      value="1000"
-                      min="1"
-                      class="input-medium"
-                      aria-label="Peso da carga em KG"
-                      required
-                    />
+                    <input type="number" id="pesoCarga" value="1000" min="1" class="input-medium" aria-label="Peso da carga em KG" required/>
                     <span>kg</span>
-                    <button
-                      id="btn-carregar"
-                      onclick="handleCarregarClick()"
-                      title="Carregar"
-                      class="btn btn-action"
-                    >
-                      Carregar
-                    </button>
-                    <button
-                      id="btn-descarregar"
-                      onclick="handleDescarregarClick()"
-                      title="Descarregar"
-                      class="btn btn-action"
-                    >
-                      Descarregar
-                    </button>
+                    <!-- onclick="" foi REMOVIDO -->
+                    <button id="btn-carregar" title="Carregar" class="btn btn-action">Carregar</button>
+                    <button id="btn-descarregar" title="Descarregar" class="btn btn-action">Descarregar</button>
                   </div>
                 </fieldset>
               </div>
 
               <!-- Aba: Registrar Manutenção -->
-              <div
-                id="tab-register-maint"
-                class="tab-content"
-                role="tabpanel"
-                aria-labelledby="tab-register-maint"
-              >
+              <div id="tab-register-maint" class="tab-content" role="tabpanel" aria-labelledby="tab-register-maint">
                 <h4>Registrar Serviço Realizado</h4>
                 <fieldset class="maintenance-forms">
-                  <form
-                    id="register-maint-form"
-                    class="maintenance-section registration-form"
-                  >
+                  <form id="register-maint-form" class="maintenance-section registration-form">
                     <div class="input-group">
                       <label for="manutTipo">Tipo:</label>
-                      <input
-                        type="text"
-                        id="manutTipo"
-                        placeholder="Ex: Troca de Óleo"
-                        required
-                      />
+                      <input type="text" id="manutTipo" placeholder="Ex: Troca de Óleo" required/>
                     </div>
                     <div class="input-group">
                       <label for="manutCusto">Custo (R$):</label>
-                      <input
-                        type="text"
-                        id="manutCusto"
-                        placeholder="Ex: 150.00 ou 150,00"
-                        required
-                        pattern="^\d+([,.]\d{1,2})?$"
-                        inputmode="decimal"
-                      />
+                      <input type="text" id="manutCusto" placeholder="Ex: 150.00 ou 150,00" required pattern="^\d+([,.]\d{1,2})?$" inputmode="decimal"/>
                     </div>
                     <div class="input-group">
                       <label for="manutDesc">Descrição:</label>
-                      <input
-                        type="text"
-                        id="manutDesc"
-                        placeholder="Detalhes adicionais (opcional)"
-                      />
+                      <input type="text" id="manutDesc" placeholder="Detalhes adicionais (opcional)"/>
                     </div>
                     <div class="button-container">
-                      <button
-                        type="button"
-                        onclick="handleRegistrarManutencao()"
-                        class="btn btn-maintenance"
-                      >
-                        Registrar Agora
-                      </button>
+                       <!-- onclick="" foi REMOVIDO -->
+                      <button type="button" class="btn btn-maintenance">Registrar Agora</button>
                     </div>
                   </form>
                 </fieldset>
               </div>
 
               <!-- Aba: Agendar Serviço -->
-              <div
-                id="tab-schedule-maint"
-                class="tab-content"
-                role="tabpanel"
-                aria-labelledby="tab-schedule-maint"
-              >
+              <div id="tab-schedule-maint" class="tab-content" role="tabpanel" aria-labelledby="tab-schedule-maint">
                 <h4>Agendar Serviço Futuro</h4>
                 <fieldset class="maintenance-forms">
-                  <form
-                    id="schedule-maint-form"
-                    class="maintenance-section agendamento-form"
-                  >
+                  <form id="schedule-maint-form" class="maintenance-section agendamento-form">
                     <div class="input-group">
                       <label for="agendamentoData">Data/Hora:</label>
-                      <input
-                        type="datetime-local"
-                        id="agendamentoData"
-                        required
-                      />
+                      <input type="datetime-local" id="agendamentoData" required/>
                     </div>
                     <div class="input-group">
                       <label for="agendamentoTipo">Tipo Serviço:</label>
-                      <input
-                        type="text"
-                        id="agendamentoTipo"
-                        placeholder="Ex: Revisão Preventiva"
-                        required
-                      />
+                      <input type="text" id="agendamentoTipo" placeholder="Ex: Revisão Preventiva" required/>
                     </div>
                     <div class="input-group">
                       <label for="agendamentoDesc">Observações:</label>
-                      <input
-                        type="text"
-                        id="agendamentoDesc"
-                        placeholder="Lembretes (opcional)"
-                      />
+                      <input type="text" id="agendamentoDesc" placeholder="Lembretes (opcional)"/>
                     </div>
                     <div class="button-container">
-                      <button
-                        type="button"
-                        onclick="handleAgendarManutencao()"
-                        class="btn btn-schedule"
-                      >
-                        Agendar
-                      </button>
+                       <!-- onclick="" foi REMOVIDO -->
+                      <button type="button" class="btn btn-schedule">Agendar</button>
                     </div>
                   </form>
                 </fieldset>
@@ -409,9 +268,7 @@
               <div class="input-group">
                 <label for="add-vehicle-type">Tipo:</label>
                 <select id="add-vehicle-type" required>
-                  <option value="" disabled selected>
-                    Selecione o tipo...
-                  </option>
+                  <option value="" disabled selected>Selecione o tipo...</option>
                   <option value="Carro">Carro Comum</option>
                   <option value="CarroEsportivo">Carro Esportivo</option>
                   <option value="Caminhao">Caminhão</option>
@@ -419,57 +276,25 @@
               </div>
               <div class="input-group">
                 <label for="add-modelo">Modelo:</label>
-                <input
-                  type="text"
-                  id="add-modelo"
-                  required
-                  placeholder="Ex: Sedan X"
-                />
+                <input type="text" id="add-modelo" required placeholder="Ex: Sedan X"/>
               </div>
               <div class="input-group">
                 <label for="add-cor">Cor:</label>
-                <input
-                  type="text"
-                  id="add-cor"
-                  required
-                  placeholder="Ex: Azul Metálico"
-                />
+                <input type="text" id="add-cor" required placeholder="Ex: Azul Metálico"/>
               </div>
               <div class="input-group">
                 <label for="add-imagem">Imagem URL:</label>
-                <input
-                  type="text"
-                  id="add-imagem"
-                  placeholder="http://... (Opcional)"
-                />
+                <input type="text" id="add-imagem" placeholder="http://... (Opcional)"/>
               </div>
               <!-- Campo Específico Caminhão -->
-              <div
-                class="input-group specific-field hidden"
-                data-type="Caminhao"
-              >
+              <div class="input-group specific-field hidden" data-type="Caminhao">
                 <label for="add-capacidade">Capacidade (kg):</label>
-                <!-- 'required' é gerenciado por JS -->
-                <input
-                  type="number"
-                  id="add-capacidade"
-                  value="10000"
-                  min="0"
-                  placeholder="Ex: 10000"
-                  inputmode="numeric"
-                />
+                <!-- 'required' é gerenciado por JS no 'main.js' -->
+                <input type="number" id="add-capacidade" value="10000" min="0" placeholder="Ex: 10000" inputmode="numeric"/>
               </div>
               <div class="button-container form-buttons">
-                <button type="submit" class="btn btn-create">
-                  Salvar Novo Veículo
-                </button>
-                <button
-                  type="button"
-                  id="btn-cancel-add-vehicle"
-                  class="btn btn-secondary"
-                >
-                  Cancelar
-                </button>
+                <button type="submit" class="btn btn-create">Salvar Novo Veículo</button>
+                <button type="button" id="btn-cancel-add-vehicle" class="btn btn-secondary">Cancelar</button>
               </div>
             </form>
           </div>
@@ -490,6 +315,9 @@
     <div id="notification-area" aria-live="polite"></div>
 
     <!-- Scripts -->
-    <script src="script.js"></script>
+    <!-- A linha antiga <script src="script.js"></script> foi removida -->
+    <!-- A nova linha abaixo carrega o main.js como módulo, que por sua vez importa as classes -->
+    <script type="module" src="main.js"></script>
+
   </body>
 </html>
