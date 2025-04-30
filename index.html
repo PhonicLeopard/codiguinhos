@@ -134,7 +134,45 @@
               >
                 <h4>Detalhes e Status</h4>
                 <div id="info-details-content" class="info-panel">
-                  <!-- Conteúdo gerado pelo JS -->
+                  <!-- Substitua o conteúdo DENTRO de <div id="tab-info" ...> -->
+
+<h4>Detalhes e Status</h4>
+<div id="info-details-content" class="info-panel">
+    <!-- 1. Área para os detalhes BÁSICOS (gerados pelo getDisplayInfo() do Veiculo) -->
+    <div id="base-vehicle-details">
+        <!-- Conteúdo gerado pelo JS (modelo, cor, status, km, vel, etc.) -->
+        <p>Selecione um veículo...</p>
+    </div>
+
+    <hr style="margin: 15px 0;"> <!-- Separador visual -->
+
+    <!-- 2. Área para os detalhes EXTERNOS (vindos da API simulada) -->
+    <h4>Detalhes Técnicos (API Simulada)</h4>
+    <div id="external-vehicle-details-container">
+        <!-- Botão para disparar a busca -->
+        <button id="btn-fetch-external-details" class="btn btn-info btn-small" style="margin-bottom: 10px;">
+            🔍 Ver Detalhes Extras
+        </button>
+
+        <!-- Área onde os resultados (ou loading/erro) serão exibidos -->
+        <div id="external-vehicle-details-content" style="font-size: 0.9em; color: #555; min-height: 40px;">
+            <!-- JS populata isso -->
+            <p>Clique no botão acima para carregar os detalhes da API simulada.</p>
+        </div>
+    </div>
+</div>
+
+<!-- O restante de #tab-info (Histórico, Agendamentos) continua abaixo -->
+<h4>Histórico de Manutenção</h4>
+<div id="info-history-content" class="info-panel maintenance-list-container">
+    <!-- Lista gerada pelo JS -->
+</div>
+<h4>Agendamentos Futuros</h4>
+<div id="info-schedule-content" class="info-panel schedule-list-container">
+    <!-- Lista gerada pelo JS -->
+</div>
+
+<!-- FIM da substituição dentro de #tab-info -->
                 </div>
                 <h4>Histórico de Manutenção</h4>
                 <div
@@ -317,6 +355,11 @@
     <!-- Scripts -->
     <!-- A linha antiga <script src="script.js"></script> foi removida -->
     <!-- A nova linha abaixo carrega o main.js como módulo, que por sua vez importa as classes -->
+    <script type="module" src="Caminhao.js"></script>
+    <script type="module" src="Veiculo.js"></script>
+    <script type="module" src="CarroEsportivo.js"></script>
+    <script type="module" src="Manutencao.js"></script>
+    <script type="module" src="Carro.js></script>
     <script type="module" src="main.js"></script>
 
   </body>

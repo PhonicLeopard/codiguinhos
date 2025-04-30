@@ -849,4 +849,20 @@ fieldset:last-child {
   .input-group textarea {
     font-size: 0.9em;
   }
+  /* Adicionado para Detalhes Externos da API Simulada */
+
+#external-vehicle-details-content.loading p,
+#external-vehicle-details-content.error p,
+#external-vehicle-details-content.not-found p {
+    font-style: italic;
+}
+
+#external-vehicle-details-content.error p {
+    color: var(--danger-color);
+}
+
+/* Adiciona um pouco de espaço entre os itens de detalhes externos */
+#external-vehicle-details-content .info-item {
+    margin-bottom: calc(var(--spacing-unit) * 0.75);
+}
 }

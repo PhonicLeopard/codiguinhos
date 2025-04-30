@@ -1,0 +1,33 @@
+// dados_veiculos_api.json
+[
+    {
+      "id": "carro_1715190000000_abcde", // <-- SUBSTITUA PELO ID REAL DE UM CARRO SEU
+      "valorFIPE_estimado": 48500.00,
+      "recall_pendente": false,
+      "dica_especifica": "Verificar alinhamento a cada 10.000 km devido ao uso urbano.",
+      "consumo_medio_cidade_kml": 11.8,
+      "consumo_medio_estrada_kml": 15.5,
+      "proxima_inspecao_obrigatoria": "2025-03-10",
+      "tipo_oleo_recomendado": "5W-30 Sintético"
+    },
+    {
+      "id": "carroesportivo_1715191000000_fghij", // <-- SUBSTITUA PELO ID REAL DE UM ESPORTIVO SEU
+      "valorFIPE_estimado": 215000.00,
+      "recall_pendente": true,
+      "dica_especifica": "Aquecer motor por 2 minutos antes de exigir performance máxima.",
+      "consumo_medio_cidade_kml": 7.5,
+      "consumo_medio_estrada_kml": 10.2,
+      "proxima_inspecao_obrigatoria": "2024-11-20",
+      "tipo_oleo_recomendado": "10W-60 Performance"
+    },
+    {
+      "id": "caminhao_1715192000000_klmno", // <-- SUBSTITUA PELO ID REAL DE UM CAMINHÃO SEU
+      "valorFIPE_estimado": 350000.00,
+      "recall_pendente": false,
+      "dica_especifica": "Verificar pressão dos pneus semanalmente quando carregado.",
+      "consumo_medio_cidade_kml": 4.5,
+      "consumo_medio_estrada_kml": 6.0,
+      "proxima_inspecao_obrigatoria": "2024-09-01",
+      "tipo_oleo_recomendado": "15W-40 Diesel"
+    }
+  ]
