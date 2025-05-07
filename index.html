@@ -32,6 +32,16 @@
       <!-- Coluna do Painel Principal (Detalhes / Formulário Adicionar) -->
       <main id="main-panel">
         <div id="panel-content">
+          <div id="weather-forecast-view" class="hidden">
+            <h2>Previsão do Tempo Detalhada</h2>
+            <div class="weather-input-area">
+                <input type="text" id="weather-city-input" placeholder="Digite o nome da cidade" aria-label="Nome da cidade para previsão do tempo">
+                <button id="btn-buscar-previsao" class="btn btn-info">Buscar Previsão</button>
+            </div>
+            <div id="previsao-tempo-resultado">
+                <!-- Resultados da previsão serão inseridos aqui pelo JavaScript -->
+                <p>Digite uma cidade e clique em "Buscar Previsão" para ver os resultados.</p>
+            </div>
           <!-- 1. Estado Padrão / Placeholder -->
           <div id="panel-placeholder" class="info-panel placeholder-panel">
             <p>
@@ -355,6 +365,7 @@
     <!-- Scripts -->
     <!-- A linha antiga <script src="script.js"></script> foi removida -->
     <!-- A nova linha abaixo carrega o main.js como módulo, que por sua vez importa as classes -->
+    <script type="module" src="weatherService.js"></script>
     <script type="module" src="Caminhao.js"></script>
     <script type="module" src="Veiculo.js"></script>
     <script type="module" src="CarroEsportivo.js"></script>

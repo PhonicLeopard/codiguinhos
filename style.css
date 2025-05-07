@@ -866,3 +866,119 @@ fieldset:last-child {
     margin-bottom: calc(var(--spacing-unit) * 0.75);
 }
 }
+/* style.css - Adicione ao final do arquivo ou em uma seção apropriada */
+
+#weather-forecast-view {
+  padding: var(--base-padding);
+  animation: fadeIn 0.4s ease; /* Reutilizando sua animação fadeIn */
+}
+
+#weather-forecast-view h2 {
+  color: var(--primary-color);
+  margin-bottom: var(--base-padding);
+  text-align: center;
+}
+
+.weather-input-area {
+  display: flex;
+  gap: var(--spacing-unit);
+  margin-bottom: var(--base-padding);
+  align-items: center;
+}
+
+.weather-input-area input[type="text"] {
+  flex-grow: 1;
+  padding: var(--input-padding);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95em;
+}
+
+.weather-input-area input[type="text"]:focus {
+border-color: var(--secondary-color);
+box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+outline: none;
+}
+
+#previsao-tempo-resultado {
+  margin-top: var(--base-padding);
+  border: 1px solid var(--medium-gray);
+  padding: var(--base-padding);
+  border-radius: var(--panel-border-radius);
+  background-color: var(--light-gray); /* Um pouco diferente do fundo do painel para destacar */
+  min-height: 100px;
+}
+
+#previsao-tempo-resultado .forecast-title {
+  font-size: 1.3em;
+  color: var(--secondary-color);
+  margin-bottom: var(--base-padding);
+  padding-bottom: calc(var(--spacing-unit) / 2);
+  border-bottom: 1px dotted var(--border-color);
+}
+
+.forecast-days-container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que os dias quebrem para a próxima linha em telas menores */
+  gap: var(--base-padding);
+  justify-content: center; /* Centraliza os cards se houver espaço */
+}
+
+.forecast-day-card {
+  background-color: var(--text-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--base-padding);
+  box-shadow: var(--card-shadow);
+  flex: 1 1 200px; /* Flex-grow, flex-shrink, flex-basis. Tenta ter 200px, mas pode crescer/diminuir */
+  min-width: 180px; /* Largura mínima antes de quebrar */
+  max-width: 250px; /* Largura máxima */
+  text-align: center;
+}
+
+.forecast-day-card h4 { /* Data */
+  margin-top: 0;
+  margin-bottom: calc(var(--spacing-unit) / 2);
+  font-size: 1.1em;
+  color: var(--primary-color);
+}
+
+.forecast-day-card img { /* Ícone do tempo */
+  width: 60px;
+  height: 60px;
+  margin: calc(var(--spacing-unit) / 2) auto;
+  display: block;
+}
+
+.forecast-day-card .temperatures {
+  font-size: 1em;
+  margin: var(--spacing-unit) 0;
+}
+
+.forecast-day-card .temperatures .temp-max {
+  font-weight: bold;
+  color: var(--danger-color); /* Ou outra cor para quente */
+}
+
+.forecast-day-card .temperatures .temp-min {
+  color: var(--info-color); /* Ou outra cor para frio */
+}
+
+.forecast-day-card .description {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  text-transform: capitalize; /* Para deixar a primeira letra maiúscula */
+  margin-top: var(--spacing-unit);
+}
+
+#previsao-tempo-resultado .loading-message,
+#previsao-tempo-resultado .error-message,
+#previsao-tempo-resultado .info-message {
+  font-style: italic;
+  text-align: center;
+  padding: var(--base-padding);
+}
+#previsao-tempo-resultado .error-message {
+  color: var(--danger-color);
+  font-weight: bold;
+}

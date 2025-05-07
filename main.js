@@ -11,6 +11,7 @@ import Carro from "./Carro.js";
 import CarroEsportivo from "./CarroEsportivo.js";
 import Caminhao from "./Caminhao.js";
 import Manutencao from "./Manutencao.js";
+import weatherService from "./weatherService.js";
 
 // --- Variáveis Globais e Constantes ---
 /** @type {Veiculo[]} */
@@ -382,67 +383,100 @@ async function buscarDetalhesVeiculoAPI(idVeiculo) {
 //                 LÓGICA DE EXIBIÇÃO E INTERFACE (UI)
 // ==========================================================================
 
-/** Mostra o painel correto (placeholder, details, addForm). @param {'placeholder' | 'details' | 'addForm'} contentType */
 function showPanelContent(contentType) {
+  // Lista de todos os painéis principais que podem ser mostrados/escondidos
+  const allPanels = [
+    DOM.panelPlaceholder,
+    DOM.vehicleDetailsView,
+    DOM.addVehicleFormView,
+    DOM.weatherForecastView // Adicionado aqui!
+  ];
+
+  // Validação inicial para garantir que os elementos DOM necessários existem
   if (
     !DOM.panelPlaceholder ||
     !DOM.vehicleDetailsView ||
-    !DOM.addVehicleFormView
+    !DOM.addVehicleFormView ||
+    !DOM.weatherForecastView // Verifique se este está no cache DOM
   ) {
     console.error(
-      "showPanelContent: Elementos de painel necessários não encontrados."
+      "showPanelContent: Um ou mais elementos de painel principais não foram encontrados no DOM. Verifique o cache."
     );
+    // Poderia até mesmo mostrar um alerta ou uma mensagem de erro mais visível na UI
     return;
   }
-  // Esconde todos
-  DOM.panelPlaceholder.classList.add("hidden");
-  DOM.vehicleDetailsView.classList.add("hidden");
-  DOM.addVehicleFormView.classList.add("hidden");
+
+  console.log(`showPanelContent called with: ${contentType}`);
+
+  // Esconde todos os painéis
+  allPanels.forEach(panel => {
+    if (panel) { // Verifica se o elemento do painel existe antes de tentar adicionar a classe
+        panel.classList.add("hidden");
+    } else {
+        // Isso pode acontecer se um ID não for encontrado durante o cacheDOMElements
+        // console.warn(`showPanelContent: Tentativa de esconder um painel não cacheado ou inexistente.`);
+    }
+  });
 
   let elementToFocus = null;
-  // Mostra o desejado
+
+  // Mostra o painel desejado
   switch (contentType) {
     case "details":
-      DOM.vehicleDetailsView.classList.remove("hidden");
-      elementToFocus =
-        DOM.detailVehicleName ||
-        DOM.vehicleDetailsView.querySelector("button, input, select, textarea");
-      console.log("Showing details panel.");
+      if (DOM.vehicleDetailsView) {
+        DOM.vehicleDetailsView.classList.remove("hidden");
+        elementToFocus =
+          DOM.detailVehicleName ||
+          DOM.vehicleDetailsView.querySelector("button, input, select, textarea");
+        console.log("Showing details panel.");
+      }
       break;
     case "addForm":
-      DOM.addVehicleFormView.classList.remove("hidden");
-      elementToFocus =
-        DOM.addVehicleType ||
-        DOM.addVehicleFormView.querySelector("input, select, textarea");
-      console.log("Showing add vehicle form panel.");
+      if (DOM.addVehicleFormView) {
+        DOM.addVehicleFormView.classList.remove("hidden");
+        elementToFocus =
+          DOM.addVehicleType ||
+          DOM.addVehicleFormView.querySelector("input, select, textarea");
+        console.log("Showing add vehicle form panel.");
+      }
+      break;
+    case "weather": // Nosso novo case
+      if (DOM.weatherForecastView) {
+        DOM.weatherForecastView.classList.remove("hidden");
+        elementToFocus = DOM.weatherCityInput || DOM.weatherForecastView.querySelector("input, button");
+        console.log("Showing weather forecast panel.");
+      }
       break;
     case "placeholder":
     default:
-      DOM.panelPlaceholder.classList.remove("hidden");
-      console.log("Showing placeholder panel.");
+      if (DOM.panelPlaceholder) {
+        DOM.panelPlaceholder.classList.remove("hidden");
+        console.log("Showing placeholder panel.");
+      }
       break;
   }
-  // Desseleciona na lista se não for 'details'
+
+  // Desseleciona na lista de veículos se não estiver mostrando 'details'
   if (contentType !== "details") {
     deselectAllVehiclesInList();
     currentlySelectedVehicle = null;
     currentlySelectedVehicleIndex = -1;
   }
-  // Foco com delay
+
+  // Foco com delay para garantir que o elemento está visível
   if (elementToFocus) {
     setTimeout(() => {
-      if (document.body.contains(elementToFocus)) {
+      if (document.body.contains(elementToFocus) && !elementToFocus.classList.contains('hidden')) { // Verifica se ainda está no DOM e visível
         elementToFocus.focus({ preventScroll: true });
         console.log("Focus set to:", elementToFocus);
       } else {
         console.warn(
-          "showPanelContent: Elemento para foco não encontrado/visível.",
+          "showPanelContent: Elemento para foco não encontrado, não visível, ou removido do DOM.",
           elementToFocus
         );
       }
-    }, 150);
+    }, 150); // Um pequeno delay pode ajudar
   }
-}
 
 /** Renderiza a lista de veículos na sidebar. */
 function renderVehicleList() {
@@ -1676,6 +1710,22 @@ function setupEventListeners() {
   );
 
   console.log("Event listeners setup finished.");
+  // main.js - dentro de setupEventListeners()
+
+function setupEventListeners() {
+  // ... seus outros listeners ...
+
+  DOM.btnBuscarPrevisao?.addEventListener('click', handleBuscarPrevisaoClick);
+  DOM.weatherCityInput?.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+          // Opcional: prevenir submit de formulário se o input estiver dentro de um <form>
+          // event.preventDefault(); 
+          handleBuscarPrevisaoClick();
+      }
+  });
+
+  console.log("Event listeners setup finished.");
+}
 }
 
 // --- Ponto de Entrada Principal ---
@@ -1685,9 +1735,166 @@ window.addEventListener("DOMContentLoaded", () => {
   if (!cacheDOMElements()) {
     alert(
       "Erro crítico: Elementos essenciais da UI não encontrados. App não pode iniciar."
+
     );
     return; // Impede inicialização se faltar algo crítico
+    // ... outros IDs
+    weather-forecast-view
+    weather-city-input
+    btn-buscar-previsao
+    previsao-tempo-resultado
+// ...
   }
+
+// Se você não estiver usando import/export dessa forma e as funções estiverem globais,
+// não precisa do import. Mas com type="module", o import é o caminho.
+
+/**
+ * Exibe a previsão do tempo processada na interface do usuário.
+ * @param {Array<Object>|null} previsaoDiaria Array de objetos de previsão por dia, ou null.
+ * @param {string} nomeCidade O nome da cidade para exibição no título.
+ */
+function exibirPrevisaoDetalhada(previsaoDiaria, nomeCidade) {
+    if (!DOM.previsaoTempoResultado) {
+        console.error("exibirPrevisaoDetalhada: Elemento #previsao-tempo-resultado não encontrado.");
+        showNotification("Erro na UI: Área de previsão não encontrada.", "error");
+        return;
+    }
+
+    const containerResultados = DOM.previsaoTempoResultado;
+    containerResultados.innerHTML = ""; // Limpa resultados anteriores
+
+    if (!previsaoDiaria || previsaoDiaria.length === 0) {
+        const p = document.createElement('p');
+        p.className = 'info-message';
+        p.textContent = `Nenhuma previsão encontrada para ${nomeCidade || 'a cidade informada'}. Verifique o nome ou tente mais tarde.`;
+        containerResultados.appendChild(p);
+        console.log("Nenhuma previsão para exibir.");
+        return;
+    }
+
+    // Adiciona um título geral para a previsão
+    const titulo = document.createElement('h3');
+    titulo.className = 'forecast-title';
+    titulo.textContent = `Previsão para os próximos dias em ${nomeCidade}`;
+    containerResultados.appendChild(titulo);
+
+    // Cria um container para os cards dos dias (para usar flexbox/grid)
+    const daysContainer = document.createElement('div');
+    daysContainer.className = 'forecast-days-container';
+    containerResultados.appendChild(daysContainer);
+
+    previsaoDiaria.forEach(dia => {
+        const cardDia = document.createElement('div');
+        cardDia.className = 'forecast-day-card';
+
+        const dataFormatada = new Date(dia.data + 'T00:00:00').toLocaleDateString('pt-BR', { // Adiciona T00:00:00 para evitar problemas de fuso
+            weekday: 'short', day: '2-digit', month: 'short'
+        });
+
+        const tituloDia = document.createElement('h4');
+        tituloDia.textContent = dataFormatada;
+        cardDia.appendChild(tituloDia);
+
+        if (dia.iconeRepresentativo) {
+            const imgIcone = document.createElement('img');
+            imgIcone.src = `https://openweathermap.org/img/wn/${dia.iconeRepresentativo}@2x.png`;
+            imgIcone.alt = dia.descricaoRepresentativa;
+            imgIcone.title = dia.descricaoRepresentativa; // Tooltip com a descrição
+            cardDia.appendChild(imgIcone);
+        }
+
+        const temperaturas = document.createElement('p');
+        temperaturas.className = 'temperatures';
+        temperaturas.innerHTML = `
+            <span class="temp-max" title="Máxima">${dia.temp_max.toFixed(1)}°C</span> /
+            <span class="temp-min" title="Mínima">${dia.temp_min.toFixed(1)}°C</span>
+        `;
+        cardDia.appendChild(temperaturas);
+
+        const descricao = document.createElement('p');
+        descricao.className = 'description';
+        descricao.textContent = dia.descricaoRepresentativa;
+        cardDia.appendChild(descricao);
+
+        // Opcional: Mostrar mais detalhes de cada intervalo de 3h (dia.entradas)
+        // const detalhes3h = document.createElement('details');
+        // const sumario3h = document.createElement('summary');
+        // sumario3h.textContent = "Ver detalhes (3h em 3h)";
+        // detalhes3h.appendChild(sumario3h);
+        // dia.entradas.forEach(entrada => {
+        //     const pEntrada = document.createElement('p');
+        //     pEntrada.style.fontSize = "0.8em";
+        //     pEntrada.textContent = `${entrada.hora}: ${entrada.temp.toFixed(1)}°C, ${entrada.descricao}`;
+        //     detalhes3h.appendChild(pEntrada);
+        // });
+        // cardDia.appendChild(detalhes3h);
+
+        daysContainer.appendChild(cardDia);
+    });
+    console.log("Previsão exibida na UI.");
+}
+/**
+ * Handler para o clique no botão de buscar previsão do tempo.
+ * @async
+ */
+async function handleBuscarPrevisaoClick() {
+  if (!DOM.weatherCityInput || !DOM.previsaoTempoResultado || !DOM.btnBuscarPrevisao) {
+      console.error("handleBuscarPrevisaoClick: Elementos da UI de previsão não encontrados.");
+      showNotification("Erro crítico na UI de previsão.", "error");
+      return;
+  }
+
+  const cidade = DOM.weatherCityInput.value.trim();
+  if (!cidade) {
+      showNotification("Por favor, digite o nome de uma cidade.", "warning");
+      DOM.weatherCityInput.focus();
+      return;
+  }
+
+  const btn = DOM.btnBuscarPrevisao;
+  const resultadosContainer = DOM.previsaoTempoResultado;
+
+  btn.disabled = true;
+  btn.classList.add('processing'); // Reutilizando sua classe de loading de botão
+  resultadosContainer.innerHTML = '<p class="loading-message">Buscando previsão para ' + cidade + '...</p>';
+
+  try {
+      const rawData = await buscarPrevisaoDetalhada(cidade);
+
+      if (rawData && rawData.cod === "200") { // Verifica o 'cod' da OpenWeatherMap
+          const processedData = processarDadosForecast(rawData);
+          if (processedData && processedData.length > 0) {
+              exibirPrevisaoDetalhada(processedData, rawData.city ? rawData.city.name : cidade);
+          } else {
+              resultadosContainer.innerHTML = `<p class="error-message">Não foi possível processar os dados da previsão para ${cidade}.</p>`;
+              console.warn("Dados processados vieram vazios ou nulos para:", cidade, rawData);
+          }
+      } else {
+          // Erro já tratado em buscarPrevisaoDetalhada, mas podemos dar um feedback mais específico aqui
+          // A mensagem de erro da API (se existir) está em rawData.message se a busca não deu null
+          const apiErrorMessage = rawData && rawData.message ? rawData.message : "Não foi possível conectar à API ou cidade não encontrada.";
+          resultadosContainer.innerHTML = `<p class="error-message">Falha ao buscar previsão para ${cidade}: ${apiErrorMessage}</p>`;
+          console.error("Erro ao buscar previsão (raw):", rawData);
+      }
+  } catch (error) { // Este catch é mais para erros inesperados no fluxo
+      console.error("Erro inesperado no fluxo de busca de previsão:", error);
+      resultadosContainer.innerHTML = `<p class="error-message">Ocorreu um erro inesperado ao buscar a previsão. Tente novamente.</p>`;
+      showNotification("Erro inesperado: " + error.message, "error");
+  } finally {
+      btn.disabled = false;
+      btn.classList.remove('processing');
+  }
+}
+
+// 5. Adicionar o Event Listener em setupEventListeners()
+// Dentro de setupEventListeners() em main.js:
+// DOM.btnBuscarPrevisao?.addEventListener('click', handleBuscarPrevisaoClick);
+// DOM.weatherCityInput?.addEventListener('keypress', (event) => {
+//     if (event.key === 'Enter') {
+//         handleBuscarPrevisaoClick();
+//     }
+// });
 
   console.log("Setting up application...");
   setupEventListeners(); // Configura listeners
@@ -1697,4 +1904,4 @@ window.addEventListener("DOMContentLoaded", () => {
 
   console.log("✅ Garagem Inteligente PRO Inicializada!");
 });
-// --- FIM DO SCRIPT ---
+}
