@@ -1,258 +1,158 @@
 // js/weatherService.js
 
-// ATENÇÃO: ARMAZENAR A API KEY DIRETAMENTE NO CÓDIGO FRONTEND É INSEGURO!
-// Em uma aplicação real, a chave NUNCA deve ficar exposta aqui.
-// A forma correta envolve um backend (Node.js, Serverless) atuando como proxy.
-// Para FINS DIDÁTICOS nesta atividade, vamos usá-la aqui temporariamente.
+// ATENÇÃO: SUBSTITUA PELA SUA CHAVE DA API OPENWEATHERMAP
+const OPENWEATHER_API_KEY = "SUA_CHAVE_OPENWEATHERMAP_AQUI";
 
-const OPENWEATHER_API_KEY = "SUA_CHAVE_OPENWEATHERMAP_AQUI"; // <-- SUBSTITUA PELA SUA CHAVE
+// Limites de temperatura para os alertas (Celsius)
+const TEMP_BAIXA_LIMITE = 10;
+const TEMP_ALTA_LIMITE = 30;
+const LIMITE_POP_ALERTA_CHUVA = 0.4; // 40% de probabilidade de precipitação
 
 /**
  * Busca a previsão do tempo detalhada (5 dias / 3 horas) para uma cidade.
  * @async
- * @param {string} cidade O nome da cidade para a qual buscar a previsão.
- * @returns {Promise<Object|null>} Um objeto com os dados da previsão se sucesso, ou null em caso de erro.
+ * @param {string} cidade O nome da cidade.
+ * @returns {Promise<Object|null>} Objeto com dados da previsão ou objeto de erro/null.
  */
 async function buscarPrevisaoDetalhada(cidade) {
     if (!cidade || typeof cidade !== 'string' || cidade.trim() === '') {
-        console.error("buscarPrevisaoDetalhada: Nome da cidade inválido ou não fornecido.");
-        // Poderia lançar um erro aqui também, mas para API externa, vamos focar nos erros de rede/API
-        return null;
+        console.error("buscarPrevisaoDetalhada: Nome da cidade inválido.");
+        return { cod: "custom_error", message: "Nome da cidade não fornecido." };
     }
 
     if (OPENWEATHER_API_KEY === "SUA_CHAVE_OPENWEATHERMAP_AQUI" || !OPENWEATHER_API_KEY) {
-        console.error("buscarPrevisaoDetalhada: A chave da API OpenWeatherMap (OPENWEATHER_API_KEY) não está configurada.");
-        // Alertar o usuário ou lançar um erro específico pode ser útil em uma aplicação real
-        // alert("Erro: A chave da API de previsão do tempo não está configurada.");
-        return null; // Ou throw new Error("API Key não configurada");
+        console.error("buscarPrevisaoDetalhada: Chave da API OpenWeatherMap não configurada.");
+        return { cod: "custom_error", message: "Chave da API não configurada." };
     }
 
     const endpoint = "https://api.openweathermap.org/data/2.5/forecast";
-    // encodeURIComponent garante que caracteres especiais na cidade (ex: "São Paulo") sejam formatados corretamente para a URL
     const cidadeCodificada = encodeURIComponent(cidade.trim());
-    const unidades = "metric";
+    const unidades = "metric"; // Sempre buscar em Celsius
     const idioma = "pt_br";
-
     const url = `${endpoint}?q=${cidadeCodificada}&units=${unidades}&lang=${idioma}&appid=${OPENWEATHER_API_KEY}`;
 
-    console.log(`Buscando previsão para: ${cidade} na URL: ${url}`); // Útil para debug
+    console.log(`Buscando previsão para: ${cidade} (URL: ${url.replace(OPENWEATHER_API_KEY, "SUA_CHAVE")})`); // Não logar a chave
 
     try {
         const response = await fetch(url);
+        const data = await response.json(); // Tenta parsear JSON mesmo para erros
 
-        // Verifica se a resposta da rede foi bem-sucedida (status 200-299)
         if (!response.ok) {
-            let errorMessage = `Erro HTTP: ${response.status} - ${response.statusText}`;
-            try {
-                // Tenta obter uma mensagem de erro mais detalhada do corpo da resposta JSON da API
-                const errorData = await response.json();
-                if (errorData && errorData.message) {
-                    errorMessage = `Erro da API OpenWeatherMap: ${errorData.message} (cidade: ${cidade})`;
-                }
-            } catch (jsonError) {
-                // Se não conseguir parsear o JSON do erro, mantém a mensagem HTTP original
-                console.warn("Não foi possível parsear JSON da resposta de erro da API:", jsonError);
-            }
-            throw new Error(errorMessage); // Lança um erro que será capturado pelo catch abaixo
+            const errorMessage = data && data.message
+                ? `Erro da API OpenWeatherMap: ${data.message} (cidade: ${cidade})`
+                : `Erro HTTP: ${response.status} - ${response.statusText}`;
+            console.error(errorMessage, data);
+            return data; // Retorna o objeto de erro da API (ex: {cod: "404", message: "city not found"})
         }
-
-        // Se response.ok é true, parseia o JSON da resposta bem-sucedida
-        const data = await response.json();
+        
         console.log("Dados da previsão recebidos:", data);
-        return data; // Retorna os dados completos da previsão
+        return data;
 
     } catch (error) {
-        // Captura erros de rede (fetch falhou) ou erros lançados manualmente (response.ok === false)
-        console.error("Erro em buscarPrevisaoDetalhada:", error.message);
-        // Em uma aplicação real, você poderia querer notificar o usuário aqui também
-        // showNotification(`Falha ao buscar previsão: ${error.message}`, "error");
-        return null; // Retorna null para indicar falha na busca
+        console.error("Erro em buscarPrevisaoDetalhada (catch geral):", error.message);
+        return { cod: "network_error", message: `Falha de rede ou comunicação: ${error.message}` };
     }
 }
 
-import { buscarPrevisaoDetalhada } from './weatherService.js'; // Se testando de outro módulo
-
-// Ou se weatherService.js já foi carregado globalmente pelo <script>
-// (lembre-se que com type="module" não fica global automaticamente)
-
-// Para teste direto no console após o carregamento da página:
-(async () => {
-    const cidade = prompt("Digite o nome da cidade para buscar a previsão:");
-    if (cidade) {
-        const dados = await buscarPrevisaoDetalhada(cidade);
-        if (dados) {
-            console.log(`Previsão para ${cidade}:`, dados);
-            // Aqui você verá o objeto JSON completo com a propriedade 'list'
-        } else {
-            console.log(`Falha ao buscar previsão para ${cidade}. Verifique o console para mais detalhes.`);
-        }
-    }
-})();
-
-export { buscarPrevisaoDetalhada, OPENWEATHER_API_KEY };
 /**
- * Processa os dados brutos da API de forecast (5 dias/3 horas) e agrupa
- * as informações relevantes por dia.
- * @param {Object} apiData O objeto JSON completo retornado pela API OpenWeatherMap.
- * @returns {Array<Object>|null} Um array de objetos, onde cada objeto representa
- *                                um dia de previsão com dados resumidos, ou null se os dados
- *                                de entrada forem inválidos.
+ * Processa os dados brutos da API e agrupa por dia, adicionando flags de alerta.
+ * @param {Object} apiData Dados brutos da API OpenWeatherMap.
+ * @returns {Array<Object>|null} Array de objetos de previsão por dia, ou null.
  */
 function processarDadosForecast(apiData) {
-    if (!apiData || !apiData.list || !Array.isArray(apiData.list) || apiData.list.length === 0) {
-        console.error("processarDadosForecast: Dados da API inválidos ou lista de previsão vazia.");
+    if (!apiData || apiData.cod !== "200" || !apiData.list || !Array.isArray(apiData.list) || apiData.list.length === 0) {
+        console.error("processarDadosForecast: Dados da API inválidos ou lista de previsão vazia.", apiData);
         return null;
     }
 
-    const previsoesPorDia = {}; // Usaremos um objeto para agrupar, chave será a data 'YYYY-MM-DD'
+    const previsoesPorDia = {};
 
-    // 1. Agrupar todas as entradas de 3 horas por dia
     apiData.list.forEach(item => {
-        // Validação mais robusta do item da API
-        if (!item || typeof item !== 'object' ||
-            !item.dt_txt || typeof item.dt_txt !== 'string' ||
+        if (!item || typeof item !== 'object' || !item.dt_txt || typeof item.dt_txt !== 'string' ||
             !item.main || typeof item.main !== 'object' ||
-            !item.weather || !Array.isArray(item.weather) || item.weather.length === 0 || !item.weather[0] || typeof item.weather[0] !== 'object') {
-            console.warn("processarDadosForecast: Item da lista de previsão incompleto ou malformado, pulando:", item);
-            return; // Pula item malformado
+            !item.weather || !Array.isArray(item.weather) || item.weather.length === 0 ||
+            !item.weather[0] || typeof item.weather[0] !== 'object') {
+            console.warn("processarDadosForecast: Item da lista de previsão malformado, pulando:", item);
+            return;
         }
 
-        const dataHora = item.dt_txt; // Formato "YYYY-MM-DD HH:MM:SS"
-        const dia = dataHora.split(' ')[0]; // Extrai "YYYY-MM-DD"
+        const dataHora = item.dt_txt;
+        const dia = dataHora.split(' ')[0];
 
         if (!previsoesPorDia[dia]) {
             previsoesPorDia[dia] = {
                 data: dia,
-                entradas: [], // Armazena todas as previsões de 3h para este dia
-                temps: [],    // Para calcular min/max facilmente
-                descricoes: new Set(), // Para armazenar descrições únicas
-                icones: new Set()      // Para armazenar ícones únicos
+                entradas: [],
+                temps: [], // Para calcular min/max diário
+                temAlertaChuva: false,
+                maiorPopDia: 0,
+                temAlertaFrio: false,
+                temAlertaCalor: false,
             };
         }
 
+        const popConvertida = typeof item.pop === 'number' ? item.pop : 0;
+        const tempAtual = item.main.temp;
+
         previsoesPorDia[dia].entradas.push({
             hora: dataHora.split(' ')[1].substring(0, 5), // HH:MM
-            temp: item.main.temp,
-            feels_like: item.main.feels_like,
-            temp_min_intervalo: item.main.temp_min, // temp_min do intervalo de 3h
-            temp_max_intervalo: item.main.temp_max, // temp_max do intervalo de 3h
+            temp: tempAtual, // Original em Celsius
+            feels_like: item.main.feels_like, // Original em Celsius
             descricao: item.weather[0].description,
             icone: item.weather[0].icon,
-            pop: typeof item.pop === 'number' ? item.pop : 0, // Probabilidade de precipitação, default 0
-            vento_velocidade: (item.wind && typeof item.wind.speed === 'number') ? item.wind.speed : null,
-            vento_direcao: (item.wind && typeof item.wind.deg === 'number') ? item.wind.deg : null,
+            pop: popConvertida,
+            vento_velocidade: (item.wind && typeof item.wind.speed === 'number') ? item.wind.speed : null, // m/s
             umidade: (item.main && typeof item.main.humidity === 'number') ? item.main.humidity : null,
             dt_txt: item.dt_txt
         });
 
-        // Adicionar temps apenas se for um número válido
-        if (typeof item.main.temp === 'number' && !isNaN(item.main.temp)) {
-             previsoesPorDia[dia].temps.push(item.main.temp);
+        if (typeof tempAtual === 'number' && !isNaN(tempAtual)) {
+             previsoesPorDia[dia].temps.push(tempAtual);
         }
-        if (item.weather[0].description) { // Garante que a descrição existe
-            previsoesPorDia[dia].descricoes.add(item.weather[0].description);
+        
+        if (popConvertida >= LIMITE_POP_ALERTA_CHUVA) {
+            previsoesPorDia[dia].temAlertaChuva = true;
         }
-        if (item.weather[0].icon) { // Garante que o ícone existe
-            previsoesPorDia[dia].icones.add(item.weather[0].icon);
+        if (popConvertida > previsoesPorDia[dia].maiorPopDia) {
+            previsoesPorDia[dia].maiorPopDia = popConvertida;
         }
     });
 
-    // 2. Processar cada dia para calcular resumos (min/max, ícone/descrição representativos)
     const resultadoFinal = [];
     for (const diaKey in previsoesPorDia) {
         const diaData = previsoesPorDia[diaKey];
+        if (diaData.entradas.length === 0) continue;
 
-        if (diaData.entradas.length === 0) continue; // Pula dia sem entradas válidas
-
-        // Cálculo de temp_min e temp_max
         if (diaData.temps.length > 0) {
-            diaData.temp_min = Math.min(...diaData.temps);
-            diaData.temp_max = Math.max(...diaData.temps);
+            diaData.temp_min = Math.min(...diaData.temps); // Celsius
+            diaData.temp_max = Math.max(...diaData.temps); // Celsius
         } else {
-            // Fallback se não houver temperaturas válidas (improvável com a lógica atual, mas seguro)
-            diaData.temp_min = diaData.entradas[0]?.temp; // Usa a temp do primeiro item se existir
+            diaData.temp_min = diaData.entradas[0]?.temp;
             diaData.temp_max = diaData.entradas[0]?.temp;
         }
 
+        if (typeof diaData.temp_min === 'number' && diaData.temp_min < TEMP_BAIXA_LIMITE) {
+            diaData.temAlertaFrio = true;
+        }
+        if (typeof diaData.temp_max === 'number' && diaData.temp_max > TEMP_ALTA_LIMITE) {
+            diaData.temAlertaCalor = true;
+        }
 
-        // Lógica para ícone e descrição representativos
         let itemRepresentativo = diaData.entradas.find(e => e.hora === "12:00" || e.hora === "15:00");
         if (!itemRepresentativo && diaData.entradas.length > 0) {
-            // Fallback: usar o item do meio da lista de entradas do dia
             itemRepresentativo = diaData.entradas[Math.floor(diaData.entradas.length / 2)];
         }
         
-        // Adiciona fallback para caso itemRepresentativo ainda seja undefined ou não tenha as propriedades
         diaData.iconeRepresentativo = itemRepresentativo?.icone || diaData.entradas[0]?.icone || null;
         diaData.descricaoRepresentativa = itemRepresentativo?.descricao || diaData.entradas[0]?.descricao || "N/A";
         
-        // delete diaData.temps; // Opcional: limpar dados brutos de agrupamento
-
+        delete diaData.temps; // Não precisa mais do array de temps individuais
         resultadoFinal.push(diaData);
     }
 
-    // Ordena os resultados por data
     resultadoFinal.sort((a, b) => new Date(a.data) - new Date(b.data));
-
-    console.log("Dados da previsão processados por dia:", resultadoFinal);
+    console.log("Dados da previsão processados:", resultadoFinal);
     return resultadoFinal;
 }
 
-// Não se esqueça de exportar a nova função se estiver usando módulos:
-export { buscarPrevisaoDetalhada, OPENWEATHER_API_KEY, processarDadosForecast };
-/**
- * Busca a previsão do tempo detalhada (5 dias / 3 horas) para uma cidade na API OpenWeatherMap.
- * Utiliza o endpoint 'data/2.5/forecast'.
- * @async
- * @function buscarPrevisaoDetalhada
- * @param {string} cidade O nome da cidade para a qual buscar a previsão. Deve ser uma string não vazia.
- * @returns {Promise<Object|null>} Um objeto com os dados da previsão da API se a requisição for bem-sucedida (contendo `cod: "200"` e a propriedade `list`),
- *                                 ou um objeto de erro da API (contendo `cod` diferente de "200" e `message`),
- *                                 ou `null` em caso de falha na validação da cidade, falha na configuração da API Key,
- *                                 ou erro de rede não tratado pela API (ex: fetch falha completamente).
- * @throws {Error} Lança um erro interno se a resposta da API não for OK e não for possível parsear o JSON de erro,
- *                 ou se ocorrer um erro durante a chamada `fetch` (que é capturado e tratado, resultando em retorno `null`).
- * @example
- * // Exemplo de uso:
- * async function obterPrevisao(nomeCidade) {
- *   const dados = await buscarPrevisaoDetalhada(nomeCidade);
- *   if (dados && dados.cod === "200") {
- *     console.log("Sucesso:", dados.list);
- *   } else if (dados) {
- *     console.error("Erro da API:", dados.message);
- *   } else {
- *     console.error("Falha geral ao buscar previsão.");
- *   }
- * }
- */
-async function buscarPrevisaoDetalhada(cidade) {
-    // ... (implementação como antes) ...
-}
-
-/**
- * Processa os dados brutos da API de forecast (5 dias/3 horas) da OpenWeatherMap
- * e agrupa as informações relevantes por dia, calculando temperaturas mínimas/máximas
- * e selecionando um ícone/descrição representativos para cada dia.
- * @function processarDadosForecast
- * @param {Object} apiData O objeto JSON completo retornado pela API OpenWeatherMap,
- *                         espera-se que contenha a propriedade `list` como um array de previsões horárias.
- * @returns {Array<Object>|null} Um array de objetos, onde cada objeto representa um dia de previsão com
- *                                dados resumidos. Cada objeto de dia contém:
- *                                `{ data: string, temp_min: number, temp_max: number, iconeRepresentativo: string,
- *                                descricaoRepresentativa: string, entradas: Array<Object> }`.
- *                                Retorna `null` se os dados de entrada (`apiData` ou `apiData.list`)
- *                                forem inválidos ou a lista de previsão estiver vazia.
- * @example
- * // Supondo que `rawData` é o resultado de `buscarPrevisaoDetalhada`
- * const previsaoPorDia = processarDadosForecast(rawData);
- * if (previsaoPorDia) {
- *   previsaoPorDia.forEach(dia => {
- *     console.log(dia.data, dia.temp_min, dia.temp_max, dia.iconeRepresentativo);
- *   });
- * }
- */
-function processarDadosForecast(apiData) {
-    // ... (implementação como antes, com as correções de robustez) ...
-}
-
-export { buscarPrevisaoDetalhada, OPENWEATHER_API_KEY, processarDadosForecast };
+export default { buscarPrevisaoDetalhada, processarDadosForecast };

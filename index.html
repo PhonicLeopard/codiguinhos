@@ -32,21 +32,47 @@
       <!-- Coluna do Painel Principal (Detalhes / Formulário Adicionar) -->
       <main id="main-panel">
         <div id="panel-content">
+
+          <!-- PAINEL DE PREVISÃO DO TEMPO -->
           <div id="weather-forecast-view" class="hidden">
             <h2>Previsão do Tempo Detalhada</h2>
             <div class="weather-input-area">
                 <input type="text" id="weather-city-input" placeholder="Digite o nome da cidade" aria-label="Nome da cidade para previsão do tempo">
                 <button id="btn-buscar-previsao" class="btn btn-info">Buscar Previsão</button>
             </div>
+
+            <div id="weather-filter-buttons" class="button-container hidden" style="margin-top: var(--base-padding); justify-content: center;">
+                <button class="btn btn-action btn-small filter-btn active" data-days="5">Todos (5 dias)</button>
+                <button class="btn btn-action btn-small filter-btn" data-days="3">Próximos 3 dias</button>
+                <button class="btn btn-action btn-small filter-btn" data-days="2">Hoje e Amanhã</button>
+            </div>
+
+            <div id="weather-controls-extra" class="hidden" style="margin-top: var(--spacing-unit); margin-bottom: var(--base-padding); display: flex; justify-content: center; align-items: center; gap: var(--base-padding); flex-wrap: wrap; font-size: 0.9em;">
+                <div id="weather-highlight-options" style="display: flex; gap: var(--base-padding); flex-wrap: wrap;">
+                    <label for="highlight-rain" class="inline-action" style="margin-bottom: 0;">
+                        <input type="checkbox" id="highlight-rain" checked> Destacar Chuva
+                    </label>
+                    <label for="highlight-cold" class="inline-action" style="margin-bottom: 0;">
+                        <input type="checkbox" id="highlight-cold"> Destacar Frio (<10°C)
+                    </label>
+                    <label for="highlight-hot" class="inline-action" style="margin-bottom: 0;">
+                        <input type="checkbox" id="highlight-hot"> Destacar Calor (>30°C)
+                    </label>
+                </div>
+                <button id="btn-toggle-temp-unit" class="btn btn-secondary btn-small" title="Alternar unidade de temperatura">°C / °F</button>
+            </div>
+
             <div id="previsao-tempo-resultado">
-                <!-- Resultados da previsão serão inseridos aqui pelo JavaScript -->
                 <p>Digite uma cidade e clique em "Buscar Previsão" para ver os resultados.</p>
             </div>
+          </div>
+          <!-- FIM PAINEL DE PREVISÃO DO TEMPO -->
+
+
           <!-- 1. Estado Padrão / Placeholder -->
           <div id="panel-placeholder" class="info-panel placeholder-panel">
             <p>
-              ⬅️ Selecione um veículo na lista ou clique em "+ Adicionar Novo
-              Veículo".
+              ⬅️ Selecione um veículo na lista, adicione um novo, ou verifique a previsão do tempo.
             </p>
           </div>
 
@@ -55,163 +81,52 @@
             <header id="vehicle-detail-header" class="detail-header">
               <img
                 id="detail-vehicle-img"
-                img src="oip.jpg"        
+                src="oip.jpg"        
                 alt="Veículo Selecionado"
                 class="detail-vehicle-image"
-                onerror="this.src='oip.jpg';" 
+                onerror="this.onerror=null; this.src='oip.jpg';" 
               /> 
               <h2 id="detail-vehicle-name">Nome do Veículo</h2>
-              <!-- Pequeno formulário para editar nome/cor/imagem rapidamente -->
               <div class="quick-edit-props">
-                <input
-                  type="text"
-                  id="quick-edit-model"
-                  placeholder="Modelo (Obrigatório)"
-                  aria-label="Editar Modelo do Veículo"
-                  required
-                />
-                <input
-                  type="text"
-                  id="quick-edit-color"
-                  placeholder="Cor (Obrigatório)"
-                  aria-label="Editar Cor do Veículo"
-                  required
-                />
-                <input
-                  type="text"
-                  id="quick-edit-image"
-                  placeholder="URL Imagem (Opcional)"
-                  aria-label="Editar URL da Imagem do Veículo"
-                />
-                <button
-                  id="btn-save-quick-edit"
-                  class="btn btn-action btn-small"
-                  title="Salvar Alterações Rápidas"
-                >
-                  💾 Salvar
-                </button>
+                <input type="text" id="quick-edit-model" placeholder="Modelo (Obrigatório)" aria-label="Editar Modelo do Veículo" required />
+                <input type="text" id="quick-edit-color" placeholder="Cor (Obrigatório)" aria-label="Editar Cor do Veículo" required />
+                <input type="text" id="quick-edit-image" placeholder="URL Imagem (Opcional)" aria-label="Editar URL da Imagem do Veículo" />
+                <button id="btn-save-quick-edit" class="btn btn-action btn-small" title="Salvar Alterações Rápidas">💾 Salvar</button>
               </div>
             </header>
 
-            <!-- Navegação por Abas -->
             <nav id="vehicle-tabs-nav" class="tab-nav" role="tablist">
-              <button
-                class="tab-link active"
-                data-target="#tab-info"
-                role="tab"
-                aria-selected="true"
-                aria-controls="tab-info"
-              >
-                Informações
-              </button>
-              <button
-                class="tab-link"
-                data-target="#tab-actions"
-                role="tab"
-                aria-selected="false"
-                aria-controls="tab-actions"
-              >
-                Ações
-              </button>
-              <button
-                class="tab-link"
-                data-target="#tab-register-maint"
-                role="tab"
-                aria-selected="false"
-                aria-controls="tab-register-maint"
-              >
-                Registrar Manutenção
-              </button>
-              <button
-                class="tab-link"
-                data-target="#tab-schedule-maint"
-                role="tab"
-                aria-selected="false"
-                aria-controls="tab-schedule-maint"
-              >
-                Agendar Serviço
-              </button>
+              <button class="tab-link active" data-target="#tab-info" role="tab" aria-selected="true" aria-controls="tab-info">Informações</button>
+              <button class="tab-link" data-target="#tab-actions" role="tab" aria-selected="false" aria-controls="tab-actions">Ações</button>
+              <button class="tab-link" data-target="#tab-register-maint" role="tab" aria-selected="false" aria-controls="tab-register-maint">Registrar Manutenção</button>
+              <button class="tab-link" data-target="#tab-schedule-maint" role="tab" aria-selected="false" aria-controls="tab-schedule-maint">Agendar Serviço</button>
             </nav>
 
-            <!-- Conteúdo das Abas -->
             <div id="tab-content-container">
-              <!-- Aba: Informações -->
-              <div
-                id="tab-info"
-                class="tab-content active"
-                role="tabpanel"
-                aria-labelledby="tab-info"
-              >
+              <div id="tab-info" class="tab-content active" role="tabpanel" aria-labelledby="tab-info">
                 <h4>Detalhes e Status</h4>
                 <div id="info-details-content" class="info-panel">
-                  <!-- Substitua o conteúdo DENTRO de <div id="tab-info" ...> -->
-
-<h4>Detalhes e Status</h4>
-<div id="info-details-content" class="info-panel">
-    <!-- 1. Área para os detalhes BÁSICOS (gerados pelo getDisplayInfo() do Veiculo) -->
-    <div id="base-vehicle-details">
-        <!-- Conteúdo gerado pelo JS (modelo, cor, status, km, vel, etc.) -->
-        <p>Selecione um veículo...</p>
-    </div>
-
-    <hr style="margin: 15px 0;"> <!-- Separador visual -->
-
-    <!-- 2. Área para os detalhes EXTERNOS (vindos da API simulada) -->
-    <h4>Detalhes Técnicos (API Simulada)</h4>
-    <div id="external-vehicle-details-container">
-        <!-- Botão para disparar a busca -->
-        <button id="btn-fetch-external-details" class="btn btn-info btn-small" style="margin-bottom: 10px;">
-            🔍 Ver Detalhes Extras
-        </button>
-
-        <!-- Área onde os resultados (ou loading/erro) serão exibidos -->
-        <div id="external-vehicle-details-content" style="font-size: 0.9em; color: #555; min-height: 40px;">
-            <!-- JS populata isso -->
-            <p>Clique no botão acima para carregar os detalhes da API simulada.</p>
-        </div>
-    </div>
-</div>
-
-<!-- O restante de #tab-info (Histórico, Agendamentos) continua abaixo -->
-<h4>Histórico de Manutenção</h4>
-<div id="info-history-content" class="info-panel maintenance-list-container">
-    <!-- Lista gerada pelo JS -->
-</div>
-<h4>Agendamentos Futuros</h4>
-<div id="info-schedule-content" class="info-panel schedule-list-container">
-    <!-- Lista gerada pelo JS -->
-</div>
-
-<!-- FIM da substituição dentro de #tab-info -->
+                    <div id="base-vehicle-details"><p>Selecione um veículo...</p></div>
+                    <hr style="margin: 15px 0;">
+                    <h4>Detalhes Técnicos (API Simulada)</h4>
+                    <div id="external-vehicle-details-container">
+                        <button id="btn-fetch-external-details" class="btn btn-info btn-small" style="margin-bottom: 10px;">🔍 Ver Detalhes Extras</button>
+                        <div id="external-vehicle-details-content" style="font-size: 0.9em; color: #555; min-height: 40px;">
+                            <p>Clique no botão acima para carregar os detalhes da API simulada.</p>
+                        </div>
+                    </div>
                 </div>
                 <h4>Histórico de Manutenção</h4>
-                <div
-                  id="info-history-content"
-                  class="info-panel maintenance-list-container"
-                >
-                  <!-- Lista gerada pelo JS -->
-                </div>
+                <div id="info-history-content" class="info-panel maintenance-list-container"></div>
                 <h4>Agendamentos Futuros</h4>
-                <div
-                  id="info-schedule-content"
-                  class="info-panel schedule-list-container"
-                >
-                  <!-- Lista gerada pelo JS -->
-                </div>
+                <div id="info-schedule-content" class="info-panel schedule-list-container"></div>
               </div>
 
-              <!-- Aba: Ações -->
-              <div
-                id="tab-actions"
-                class="tab-content"
-                role="tabpanel"
-                aria-labelledby="tab-actions"
-              >
+              <div id="tab-actions" class="tab-content" role="tabpanel" aria-labelledby="tab-actions">
                 <h4>Controles do Veículo</h4>
                 <fieldset>
                   <legend>Motor e Movimento</legend>
                   <div class="button-container action-buttons">
-                    <!-- IDs são mantidos, mas onclick="" foi REMOVIDO -->
                     <button id="btn-ligar" title="Ligar Motor" class="btn btn-action">Ligar</button>
                     <button id="btn-desligar" title="Desligar Motor" class="btn btn-action">Desligar</button>
                     <button id="btn-acelerar" title="Acelerar" class="btn btn-action">Acelerar</button>
@@ -222,15 +137,12 @@
                     <label for="distanciaRodar">Rodar:</label>
                     <input type="number" id="distanciaRodar" value="100" min="1" class="input-small" aria-label="Distância a rodar em KM" required/>
                     <span>km</span>
-                    <!-- onclick="" foi REMOVIDO -->
                     <button id="btn-rodar" title="Simular rodagem" class="btn btn-action">Ir</button>
                   </div>
                 </fieldset>
-                <!-- Ações Específicas -->
                 <fieldset id="actions-esportivo" class="specific-actions hidden">
                   <legend>Controles Esportivo</legend>
                   <div class="button-container action-buttons">
-                     <!-- onclick="" foi REMOVIDO -->
                     <button id="btn-turbo-on" title="Ativar Turbo" class="btn btn-action">Turbo ON</button>
                     <button id="btn-turbo-off" title="Desativar Turbo" class="btn btn-action">Turbo OFF</button>
                   </div>
@@ -241,73 +153,38 @@
                     <label for="pesoCarga">Carga/Descarga:</label>
                     <input type="number" id="pesoCarga" value="1000" min="1" class="input-medium" aria-label="Peso da carga em KG" required/>
                     <span>kg</span>
-                    <!-- onclick="" foi REMOVIDO -->
                     <button id="btn-carregar" title="Carregar" class="btn btn-action">Carregar</button>
                     <button id="btn-descarregar" title="Descarregar" class="btn btn-action">Descarregar</button>
                   </div>
                 </fieldset>
               </div>
 
-              <!-- Aba: Registrar Manutenção -->
               <div id="tab-register-maint" class="tab-content" role="tabpanel" aria-labelledby="tab-register-maint">
                 <h4>Registrar Serviço Realizado</h4>
                 <fieldset class="maintenance-forms">
                   <form id="register-maint-form" class="maintenance-section registration-form">
-                    <div class="input-group">
-                      <label for="manutTipo">Tipo:</label>
-                      <input type="text" id="manutTipo" placeholder="Ex: Troca de Óleo" required/>
-                    </div>
-                    <div class="input-group">
-                      <label for="manutCusto">Custo (R$):</label>
-                      <input type="text" id="manutCusto" placeholder="Ex: 150.00 ou 150,00" required pattern="^\d+([,.]\d{1,2})?$" inputmode="decimal"/>
-                    </div>
-                    <div class="input-group">
-                      <label for="manutDesc">Descrição:</label>
-                      <input type="text" id="manutDesc" placeholder="Detalhes adicionais (opcional)"/>
-                    </div>
-                    <div class="button-container">
-                       <!-- onclick="" foi REMOVIDO -->
-                      <button type="button" class="btn btn-maintenance">Registrar Agora</button>
-                    </div>
+                    <div class="input-group"><label for="manutTipo">Tipo:</label><input type="text" id="manutTipo" placeholder="Ex: Troca de Óleo" required/></div>
+                    <div class="input-group"><label for="manutCusto">Custo (R$):</label><input type="text" id="manutCusto" placeholder="Ex: 150.00 ou 150,00" required pattern="^\d+([,.]\d{1,2})?$" inputmode="decimal"/></div>
+                    <div class="input-group"><label for="manutDesc">Descrição:</label><input type="text" id="manutDesc" placeholder="Detalhes adicionais (opcional)"/></div>
+                    <div class="button-container"><button type="button" class="btn btn-maintenance">Registrar Agora</button></div>
                   </form>
                 </fieldset>
               </div>
 
-              <!-- Aba: Agendar Serviço -->
               <div id="tab-schedule-maint" class="tab-content" role="tabpanel" aria-labelledby="tab-schedule-maint">
                 <h4>Agendar Serviço Futuro</h4>
                 <fieldset class="maintenance-forms">
                   <form id="schedule-maint-form" class="maintenance-section agendamento-form">
-                    <div class="input-group">
-                      <label for="agendamentoData">Data/Hora:</label>
-                      <input type="datetime-local" id="agendamentoData" required/>
-                    </div>
-                    <div class="input-group">
-                      <label for="agendamentoTipo">Tipo Serviço:</label>
-                      <input type="text" id="agendamentoTipo" placeholder="Ex: Revisão Preventiva" required/>
-                    </div>
-                    <div class="input-group">
-                      <label for="agendamentoDesc">Observações:</label>
-                      <input type="text" id="agendamentoDesc" placeholder="Lembretes (opcional)"/>
-                    </div>
-                    <div class="button-container">
-                       <!-- onclick="" foi REMOVIDO -->
-                      <button type="button" class="btn btn-schedule">Agendar</button>
-                    </div>
+                    <div class="input-group"><label for="agendamentoData">Data/Hora:</label><input type="datetime-local" id="agendamentoData" required/></div>
+                    <div class="input-group"><label for="agendamentoTipo">Tipo Serviço:</label><input type="text" id="agendamentoTipo" placeholder="Ex: Revisão Preventiva" required/></div>
+                    <div class="input-group"><label for="agendamentoDesc">Observações:</label><input type="text" id="agendamentoDesc" placeholder="Lembretes (opcional)"/></div>
+                    <div class="button-container"><button type="button" class="btn btn-schedule">Agendar</button></div>
                   </form>
                 </fieldset>
               </div>
             </div>
-            <!-- Fim #tab-content-container -->
-
-            <!-- Botão de Excluir -->
-            <div class="delete-area">
-              <button id="btn-delete-vehicle" class="btn btn-danger">
-                Excluir Veículo
-              </button>
-            </div>
+            <div class="delete-area"><button id="btn-delete-vehicle" class="btn btn-danger">Excluir Veículo</button></div>
           </div>
-          <!-- Fim #vehicle-details-view -->
 
           <!-- 3. Estado: Formulário para Adicionar Novo Veículo -->
           <div id="add-vehicle-form-view" class="hidden">
@@ -322,22 +199,11 @@
                   <option value="Caminhao">Caminhão</option>
                 </select>
               </div>
-              <div class="input-group">
-                <label for="add-modelo">Modelo:</label>
-                <input type="text" id="add-modelo" required placeholder="Ex: Sedan X"/>
-              </div>
-              <div class="input-group">
-                <label for="add-cor">Cor:</label>
-                <input type="text" id="add-cor" required placeholder="Ex: Azul Metálico"/>
-              </div>
-              <div class="input-group">
-                <label for="add-imagem">Imagem URL:</label>
-                <input type="text" id="add-imagem" placeholder="http://... (Opcional)"/>
-              </div>
-              <!-- Campo Específico Caminhão -->
+              <div class="input-group"><label for="add-modelo">Modelo:</label><input type="text" id="add-modelo" required placeholder="Ex: Sedan X"/></div>
+              <div class="input-group"><label for="add-cor">Cor:</label><input type="text" id="add-cor" required placeholder="Ex: Azul Metálico"/></div>
+              <div class="input-group"><label for="add-imagem">Imagem URL:</label><input type="text" id="add-imagem" placeholder="http://... (Opcional)"/></div>
               <div class="input-group specific-field hidden" data-type="Caminhao">
                 <label for="add-capacidade">Capacidade (kg):</label>
-                <!-- 'required' é gerenciado por JS no 'main.js' -->
                 <input type="number" id="add-capacidade" value="10000" min="0" placeholder="Ex: 10000" inputmode="numeric"/>
               </div>
               <div class="button-container form-buttons">
@@ -346,32 +212,22 @@
               </div>
             </form>
           </div>
-          <!-- Fim #add-vehicle-form-view -->
         </div>
-        <!-- Fim #panel-content -->
       </main>
-      <!-- Fim #main-panel -->
     </div>
-    <!-- Fim .main-content-area -->
 
-    <!-- Rodapé -->
     <footer class="main-footer">
       <p>Projeto Garagem Inteligente © 2024</p>
     </footer>
 
-    <!-- Área para Notificações (JS) -->
     <div id="notification-area" aria-live="polite"></div>
 
-    <!-- Scripts -->
-    <!-- A linha antiga <script src="script.js"></script> foi removida -->
-    <!-- A nova linha abaixo carrega o main.js como módulo, que por sua vez importa as classes -->
-    <script type="module" src="weatherService.js"></script>
-    <script type="module" src="Caminhao.js"></script>
     <script type="module" src="Veiculo.js"></script>
-    <script type="module" src="CarroEsportivo.js"></script>
     <script type="module" src="Manutencao.js"></script>
-    <script type="module" src="Carro.js></script>
+    <script type="module" src="Carro.js"></script>
+    <script type="module" src="CarroEsportivo.js"></script>
+    <script type="module" src="Caminhao.js"></script>
+    <script type="module" src="weatherService.js"></script>
     <script type="module" src="main.js"></script>
-
   </body>
 </html>
