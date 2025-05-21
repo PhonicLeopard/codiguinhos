@@ -1809,6 +1809,10 @@ function exibirPrevisaoFiltrada(previsaoDiariaCompleta, nomeCidade, numDiasParaE
  * Handler para o clique no botão de buscar previsão do tempo.
  * @async
  */
+// Em main.js
+// ... (importações, incluindo weatherServiceModule)
+// const { buscarPrevisaoDetalhada, processarDadosForecast } = weatherServiceModule; // Já deve estar assim
+
 async function handleBuscarPrevisaoClick() {
     if (!DOM.weatherCityInput || !DOM.previsaoTempoResultado || !DOM.btnBuscarPrevisao) {
         console.error("handleBuscarPrevisaoClick: Elementos da UI de previsão não encontrados.");
@@ -1824,52 +1828,57 @@ async function handleBuscarPrevisaoClick() {
 
     const btn = DOM.btnBuscarPrevisao;
     const resultadosContainer = DOM.previsaoTempoResultado;
-    const filterButtonsContainer = DOM.weatherFilterButtonsContainer; // Cache do container de filtros
+    const filterButtonsContainer = DOM.weatherFilterButtonsContainer;
 
     btn.disabled = true;
     btn.classList.add('processing');
     resultadosContainer.innerHTML = `<p class="loading-message">Buscando previsão para ${cidade}...</p>`;
-    if (filterButtonsContainer) filterButtonsContainer.classList.add('hidden'); // Esconde filtros durante a busca
+    if (filterButtonsContainer) filterButtonsContainer.classList.add('hidden');
 
-    // Resetar filtro ativo para o padrão (5 dias)
     if (filterButtonsContainer) {
         filterButtonsContainer.querySelectorAll('.filter-btn.active').forEach(b => b.classList.remove('active'));
         const defaultFilterBtn = filterButtonsContainer.querySelector('.filter-btn[data-days="5"]');
         if (defaultFilterBtn) defaultFilterBtn.classList.add('active');
     }
-    _numDiasFiltroPrevisao = 5;
-
+    _numDiasFiltroPrevisao = 5; // Resetar filtro para o padrão
 
     try {
-        const rawData = await buscarPrevisaoDetalhada(cidade);
+        // 1. Chama buscarPrevisaoDetalhada (que agora usa o backend)
+        const rawDataFromBackend = await buscarPrevisaoDetalhada(cidade); // do weatherService.js
 
-        if (rawData && rawData.cod === "200") {
-            _dadosCompletosPrevisao = processarDadosForecast(rawData);
-            _cidadeAtualPrevisao = rawData.city ? rawData.city.name : cidade;
+        // Se chegou aqui, a busca no backend (e na OpenWeatherMap) foi bem-sucedida
+        // rawDataFromBackend é o JSON original da OpenWeatherMap
+        
+        if (rawDataFromBackend && rawDataFromBackend.cod === "200") { // Checa se os dados são válidos
+            _dadosCompletosPrevisao = processarDadosForecast(rawDataFromBackend); // do weatherService.js
+            _cidadeAtualPrevisao = rawDataFromBackend.city ? rawDataFromBackend.city.name : cidade;
 
             if (_dadosCompletosPrevisao && _dadosCompletosPrevisao.length > 0) {
-                exibirPrevisaoFiltrada(_dadosCompletosPrevisao, _cidadeAtualPrevisao, _numDiasFiltroPrevisao); // Exibe com filtro padrão
-                if (filterButtonsContainer) filterButtonsContainer.classList.remove('hidden'); // Mostra botões de filtro
+                // 2. Exibe os dados processados (usando sua função exibirPrevisaoFiltrada ou similar)
+                exibirPrevisaoFiltrada(_dadosCompletosPrevisao, _cidadeAtualPrevisao, _numDiasFiltroPrevisao);
+                if (filterButtonsContainer) filterButtonsContainer.classList.remove('hidden');
             } else {
                 resultadosContainer.innerHTML = `<p class="error-message">Não foi possível processar os dados da previsão para ${cidade}.</p>`;
                 _dadosCompletosPrevisao = null;
                 _cidadeAtualPrevisao = null;
             }
         } else {
-            const apiErrorMessage = rawData && rawData.message ? rawData.message : "Não foi possível conectar ou cidade não encontrada.";
-            resultadosContainer.innerHTML = `<p class="error-message">Falha ao buscar previsão para ${cidade}: ${apiErrorMessage}</p>`;
+            // Caso o backend retorne algo que não seja o esperado (mesmo com response.ok)
+            // ou se o rawDataFromBackend.cod não for "200"
+            const apiErrorMessage = rawDataFromBackend?.message || "Resposta inesperada do servidor.";
+            resultadosContainer.innerHTML = `<p class="error-message">Falha ao obter previsão para ${cidade}: ${apiErrorMessage}</p>`;
             _dadosCompletosPrevisao = null;
             _cidadeAtualPrevisao = null;
-            if (rawData && rawData.cod === "custom_error" && rawData.message === "Chave da API não configurada.") {
-                 showNotification("ERRO GRAVE: A chave da API de previsão do tempo não está configurada no código.", "error", 0);
-            }
         }
+
     } catch (error) {
-        console.error("Erro inesperado no fluxo de busca de previsão:", error);
-        resultadosContainer.innerHTML = `<p class="error-message">Ocorreu um erro inesperado. Tente novamente.</p>`;
+        // Erros lançados por buscarPrevisaoDetalhada (ex: falha de rede, erro do backend) serão pegos aqui
+        console.error("[Frontend/main.js] Erro ao buscar/processar previsão:", error);
+        resultadosContainer.innerHTML = `<p class="error-message">Falha ao buscar previsão: ${error.message}</p>`;
         _dadosCompletosPrevisao = null;
         _cidadeAtualPrevisao = null;
-        showNotification("Erro inesperado: " + error.message, "error");
+        // Opcional: showNotification para erros mais graves ou específicos
+        // showNotification(`Erro: ${error.message}`, "error");
     } finally {
         btn.disabled = false;
         btn.classList.remove('processing');
@@ -2041,4 +2050,4 @@ window.addEventListener("DOMContentLoaded", () => {
   // Esconder botões de filtro inicialmente, pois não há dados
   if (DOM.weatherFilterButtonsContainer) DOM.weatherFilterButtonsContainer.classList.add('hidden');
 
-  console.log("✅ Garagem Inteligente PRO Inicializada!")
+  console.log("✅ Garagem Inteligente PRO Inicializada!")}
