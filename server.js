@@ -1,74 +1,70 @@
-// Importações
-import express from 'express';
-import dotenv from 'dotenv';
-import axios from 'axios';
-import cors from 'cors'; // Importa o pacote cors
+// backend-proxy/server.js
 
-// Carrega variáveis de ambiente do arquivo .env
-dotenv.config();
+const express = require('express');
+const fetch = require('node-fetch'); // Ou: import fetch from 'node-fetch'; se package.json tiver "type": "module"
+require('dotenv').config(); // Para carregar variáveis do arquivo .env
 
-// Inicializa o aplicativo Express
 const app = express();
-const port = process.env.PORT || 3001; // Porta para o servidor backend
-                                    // Use uma porta diferente do frontend se rodar ambos localmente
-const apiKey = process.env.OPENWEATHER_API_KEY;
+const PORT = process.env.PORT || 3001; // Porta para o servidor local
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY_BACKEND; // Nome diferente da do frontend
 
-// Middleware para habilitar CORS de forma simples (permite todas as origens por padrão)
-app.use(cors());
+// Middleware para permitir CORS (Cross-Origin Resource Sharing)
+// Isso é importante se seu frontend e backend rodarem em portas diferentes localmente
+// ou quando o frontend for consumir o backend publicado.
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // Permite qualquer origem (para desenvolvimento)
+                                                  // Em produção, restrinja para a URL do seu frontend
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
-// ----- NOSSO PRIMEIRO ENDPOINT: Previsão do Tempo -----
-app.get('/api/previsao/:cidade', async (req, res) => {
-    const { cidade } = req.params; // Pega o parâmetro :cidade da URL
+// Endpoint do seu backend que o frontend vai chamar
+// ex: http://localhost:3001/api/weather?city=Londres
+app.get('/api/weather', async (req, res) => {
+    const city = req.query.city;
 
-    if (!apiKey) {
-        console.error('[Servidor] ERRO FATAL: Chave da API OpenWeatherMap não carregada do .env');
-        return res.status(500).json({ error: 'Chave da API OpenWeatherMap não configurada no servidor.' });
+    if (!city) {
+        return res.status(400).json({ error: 'Parâmetro "city" é obrigatório.' });
     }
-    if (!cidade) {
-        return res.status(400).json({ error: 'Nome da cidade é obrigatório.' });
+
+    if (!OPENWEATHER_API_KEY) {
+        console.error('ERRO: OPENWEATHER_API_KEY_BACKEND não está definida no backend!');
+        return res.status(500).json({ error: 'Configuração do servidor incompleta (API Key).' });
     }
 
-    const weatherAPIUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(cidade)}&appid=${apiKey}&units=metric&lang=pt_br`;
+    const units = 'metric';
+    const lang = 'pt_br';
+    const weatherURL = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&units=${units}&lang=${lang}&appid=${OPENWEATHER_API_KEY}`;
+
+    console.log(`Backend: Recebida requisição para cidade: ${city}`);
+    console.log(`Backend: Buscando dados de: ${weatherURL.replace(OPENWEATHER_API_KEY, "SUA_CHAVE_BACKEND")}`);
+
 
     try {
-        console.log(`[Servidor] Recebida requisição para: /api/previsao/${cidade}`);
-        console.log(`[Servidor] URL da API Externa: ${weatherAPIUrl.replace(apiKey, "SUA_CHAVE_OCULTA")}`); // Não logar a chave completa
-        
-        const apiResponse = await axios.get(weatherAPIUrl);
-        
-        console.log(`[Servidor] Sucesso! Dados recebidos da OpenWeatherMap para ${cidade}. Status: ${apiResponse.status}`);
-        
-        // Enviamos a resposta da API OpenWeatherMap diretamente para o nosso frontend
-        res.json(apiResponse.data);
+        const weatherResponse = await fetch(weatherURL);
+        const weatherData = await weatherResponse.json();
+
+        if (!weatherResponse.ok) {
+            // Se a OpenWeatherAPI retornar um erro (ex: cidade não encontrada, chave inválida)
+            console.error('Backend: Erro da API OpenWeatherMap:', weatherData);
+            return res.status(weatherResponse.status).json(weatherData);
+        }
+
+        console.log('Backend: Dados da OpenWeatherMap recebidos com sucesso.');
+        res.json(weatherData); // Envia os dados da OpenWeatherMap para o frontend
 
     } catch (error) {
-        // Log detalhado do erro no servidor
-        if (error.response) {
-            // A requisição foi feita e o servidor respondeu com um status code
-            // que cai fora do range de 2xx
-            console.error(`[Servidor] Erro da API OpenWeatherMap (Status: ${error.response.status}):`, error.response.data);
-            const status = error.response.status;
-            const message = error.response.data?.message || 'Erro ao buscar dados da API externa.';
-            return res.status(status).json({ error: message, details: error.response.data });
-        } else if (error.request) {
-            // A requisição foi feita mas nenhuma resposta foi recebida
-            console.error('[Servidor] Erro de requisição: Nenhuma resposta recebida da API OpenWeatherMap.', error.request);
-            return res.status(503).json({ error: 'Serviço da API externa indisponível ou sem resposta.' });
-        } else {
-            // Algo aconteceu na configuração da requisição que acionou um erro
-            console.error('[Servidor] Erro ao configurar requisição para OpenWeatherMap:', error.message);
-            return res.status(500).json({ error: 'Erro interno no servidor ao preparar a requisição.', details: error.message });
-        }
+        console.error('Backend: Erro ao buscar dados da OpenWeatherMap:', error);
+        res.status(500).json({ error: 'Falha ao buscar dados do clima.', details: error.message });
     }
 });
 
-// Inicia o servidor
-app.listen(port, () => {
-    console.log(`Servidor backend rodando em http://localhost:${port}`);
-    if (!apiKey) {
-        console.warn('[Servidor] ATENÇÃO: A chave da API OpenWeatherMap (OPENWEATHER_API_KEY) não foi encontrada no arquivo .env ou não foi carregada corretamente.');
-        console.warn('[Servidor] Certifique-se de que o arquivo .env existe na pasta "backend" e contém a linha OPENWEATHER_API_KEY=SUA_CHAVE_REAL');
+app.listen(PORT, () => {
+    console.log(`Servidor backend (proxy) rodando na porta ${PORT}`);
+    if (!OPENWEATHER_API_KEY) {
+        console.warn('ATENÇÃO: A variável de ambiente OPENWEATHER_API_KEY_BACKEND não está definida!');
+        console.warn('O endpoint /api/weather não funcionará corretamente sem ela.');
     } else {
-        console.log('[Servidor] Chave da API OpenWeatherMap carregada com sucesso.');
+        console.log('OPENWEATHER_API_KEY_BACKEND carregada com sucesso.');
     }
 });

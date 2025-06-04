@@ -1,5 +1,6 @@
-# Ignorar dependências do Node
+# backend-proxy/.gitignore
 node_modules/
-
-# Ignorar variáveis de ambiente
 .env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
