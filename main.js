@@ -1317,6 +1317,75 @@ function handleQuickEditSave(event) {
     if (typeof playSound === "function") playSound(soundMap.error);
     return;
   }
+  // main.js (SUBSTITUA ESTA FUNÇÃO)
+
+/**
+ * Handler para buscar detalhes externos (da API simulada e do nosso backend).
+ * @async
+ * @param {Event} event
+ */
+async function handleFetchExternalDetailsClick(event) {
+  if (!currentlySelectedVehicle || !currentlySelectedVehicle.id) {
+    showNotification("❗ Selecione um veículo.", "warning");
+    playSound(soundMap.error);
+    return;
+  }
+  
+  const button = DOM.btnFetchExternalDetails;
+  const contentArea = DOM.externalVehicleDetailsContent;
+  if (!button || !contentArea) return;
+
+  const vehicleId = currentlySelectedVehicle.id;
+  button.disabled = true;
+  button.classList.add("processing");
+  contentArea.innerHTML = "<p><i>Carregando detalhes extras...</i></p>";
+  contentArea.className = "info-panel loading";
+
+  try {
+    // Realiza as duas buscas em paralelo para mais eficiência
+    const [responseApiSimulada, responseRevisao] = await Promise.all([
+      fetch("./dados_veiculos_api.json").catch(e => { console.warn('Falha na API simulada, continuando...'); return null; }),
+      fetch(`http://localhost:3001/api/revisao/${vehicleId}`).catch(e => { console.warn('Falha na API de revisão, continuando...'); return null; })
+    ]);
+
+    let finalHtml = '';
+
+    // Processa dados da API simulada (JSON local)
+    if (responseApiSimulada && responseApiSimulada.ok) {
+        const todosDetalhes = await responseApiSimulada.json();
+        const detalhesAPI = todosDetalhes.find(d => d && d.id === vehicleId);
+        if (detalhesAPI) {
+            // (Código de formatação que você já tinha)
+            finalHtml += `<div class="info-item"><strong>Valor FIPE (Est.):</strong> ${Number(detalhesAPI.valorFIPE_estimado).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</div>`;
+            finalHtml += `<div class="info-item"><strong>Recall Pendente?:</strong> ${detalhesAPI.recall_pendente ? '<strong style="color: var(--danger-color);">SIM</strong>' : "Não"}</div>`;
+            finalHtml += `<div class="info-item"><strong>Dica Específica:</strong> ${detalhesAPI.dica_especifica}</div>`;
+        }
+    }
+
+    // Processa dados da API de Revisão (do nosso backend)
+    if (responseRevisao && responseRevisao.ok) {
+        const dadosRevisao = await responseRevisao.json();
+        // Adiciona um separador se já houver conteúdo
+        if (finalHtml) finalHtml += '<hr style="margin: 10px 0; border-style: dashed;">';
+        
+        finalHtml += `<div class="info-item"><strong>Próxima Revisão Agendada:</strong> ${new Date(dadosRevisao.proxima_revisao + "T00:00:00").toLocaleDateString("pt-BR")}</div>`;
+        finalHtml += `<div class="info-item"><strong>Tipo de Revisão:</strong> ${dadosRevisao.tipo_revisao}</div>`;
+        finalHtml += `<div class="info-item"><strong>Detalhes:</strong> ${dadosRevisao.detalhes}</div>`;
+    }
+    
+    contentArea.innerHTML = finalHtml || "<p><i>Nenhum detalhe extra encontrado para este veículo.</i></p>";
+    contentArea.className = "info-panel success";
+
+  } catch (error) {
+    console.error("Erro ao buscar/exibir detalhes externos:", error);
+    contentArea.innerHTML = `<p style="color: var(--danger-color);">❌ Falha ao carregar. Verifique o console e se o servidor está no ar.</p>`;
+    contentArea.className = "info-panel error";
+  } finally {
+    button.disabled = false;
+    button.classList.remove("processing");
+    contentArea.classList.remove("loading");
+  }
+}
 
   // Chama interagir com updateProperties (4o arg null p/ capacidade)
   interagir(
@@ -1882,7 +1951,19 @@ async function handleBuscarPrevisaoClick() {
     } finally {
         btn.disabled = false;
         btn.classList.remove('processing');
-    }
+    }// main.js - na função cacheDOMElements()
+
+function cacheDOMElements() {
+  console.log("Caching DOM elements...");
+  const ids = [
+    // ... (todos os seus IDs existentes) ...
+    "btn-fetch-external-details",
+    "external-vehicle-details-content",
+    "dicas-content", // <-- ADICIONE ESTE!
+    // ... (resto dos seus IDs) ...
+  ];
+  // ... (resto da função) ...
+}
 }
 
 /**
@@ -2046,6 +2127,107 @@ window.addEventListener("DOMContentLoaded", () => {
   carregarGaragemDoLocalStorage();
   renderVehicleList();
   showPanelContent("weather"); // Manter a view de previsão como padrão inicial
+  // main.js (ADICIONE ESTAS 3 FUNÇÕES)
+
+/**
+ * Busca e exibe dicas de manutenção para o veículo selecionado.
+ * @async
+ */
+async function fetchAndDisplayDicas() {
+  if (!currentlySelectedVehicle || !DOM.dicasContent) {
+    return; // Sai se não houver veículo ou se o elemento não existir
+  }
+
+  const tipoVeiculo = currentlySelectedVehicle.constructor.name;
+  const contentArea = DOM.dicasContent;
+  contentArea.innerHTML = "<p><i>Carregando dicas...</i></p>";
+
+  try {
+    // Busca as dicas específicas para o tipo de veículo
+    const response = await fetch(`http://localhost:3001/api/dicas-manutencao/${tipoVeiculo}`);
+    
+    if (!response.ok) {
+        // Se o tipo específico não for encontrado (404), busca as dicas gerais
+        if (response.status === 404) {
+            console.log(`Dicas para '${tipoVeiculo}' não encontradas, buscando dicas gerais.`);
+            const responseGeral = await fetch(`http://localhost:3001/api/dicas-manutencao`);
+            if (!responseGeral.ok) throw new Error("Falha ao buscar dicas gerais.");
+            const dicasGerais = await responseGeral.json();
+            contentArea.innerHTML = generateDicasHtml(dicasGerais, "Dicas Gerais");
+            return;
+        }
+        throw new Error(`Erro do servidor: ${response.statusText}`);
+    }
+
+    const dicas = await response.json();
+    contentArea.innerHTML = generateDicasHtml(dicas, `Dicas para ${tipoVeiculo}`);
+
+  } catch (error) {
+    console.error("Erro ao buscar dicas:", error);
+    contentArea.innerHTML = `<p style="color: var(--danger-color);">❌ Falha ao carregar dicas. Verifique se o servidor backend está rodando.</p>`;
+  }
+}
+
+/**
+ * Gera o HTML para uma lista de dicas.
+ * @param {Array<Object>} dicas - Array de objetos de dica, cada um com uma propriedade 'dica'.
+ * @param {string} titulo - O título para a seção de dicas.
+ * @returns {string} String HTML com a lista de dicas.
+ */
+function generateDicasHtml(dicas, titulo) {
+  if (!dicas || dicas.length === 0) {
+    return `<p>Nenhuma dica encontrada.</p>`;
+  }
+  const listaHtml = dicas
+    .map(dica => `<li>${dica.dica}</li>`)
+    .join('');
+  
+  return `<h5>${titulo}</h5><ul class="dicas-list">${listaHtml}</ul>`;
+}
+
+
+/**
+ * Modifica o `activateTab` para carregar as dicas quando a aba for clicada.
+ * Esta função SUBSTITUI a sua `activateTab` existente.
+ * @param {HTMLButtonElement} tabButton
+ */
+function activateTab(tabButton) {
+  if (!(tabButton instanceof HTMLButtonElement) || !tabButton.classList.contains("tab-link")) return;
+  if (!DOM.vehicleTabsNav || !DOM.tabContentContainer) return;
+
+  // Desativa todos
+  DOM.vehicleTabsNav.querySelectorAll(".tab-link").forEach(button => {
+    button.classList.remove("active");
+    button.setAttribute("aria-selected", "false");
+  });
+  DOM.tabContentContainer.querySelectorAll(".tab-content").forEach(panel => {
+    panel.classList.remove("active");
+    panel.hidden = true;
+  });
+  
+  // Ativa o clicado
+  tabButton.classList.add("active");
+  tabButton.setAttribute("aria-selected", "true");
+  
+  const targetId = tabButton.dataset.target;
+  if (targetId) {
+    const targetContent = DOM.tabContentContainer.querySelector(targetId);
+    if (targetContent) {
+      targetContent.classList.add("active");
+      targetContent.hidden = false;
+      console.log(`Activated tab: ${targetId}`);
+
+      // LÓGICA INTELIGENTE: Carrega o conteúdo sob demanda
+      // Apenas carrega as dicas se a aba "Dicas" for ativada e se ela ainda não foi carregada.
+      if (targetId === '#tab-dicas' && !targetContent.dataset.loaded) {
+          fetchAndDisplayDicas();
+          targetContent.dataset.loaded = 'true'; // Marca como carregado para não buscar de novo
+      }
+    } else {
+      console.warn(`activateTab: Content panel "${targetId}" não encontrado.`);
+    }
+  }
+}
 
   // Esconder botões de filtro inicialmente, pois não há dados
   if (DOM.weatherFilterButtonsContainer) DOM.weatherFilterButtonsContainer.classList.add('hidden');
