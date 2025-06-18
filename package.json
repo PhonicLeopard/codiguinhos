@@ -6,4 +6,96 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0"
   }
+  {
+  "oleo_motor": [
+    {
+      "nome": "Óleo 15W-40 para Motores Diesel",
+      "marca_sugerida": "Petronas Urania",
+      "observacao": "Essencial para alta quilometragem e cargas pesadas."
+    }
+  ],
+  "pneus": [
+    {
+      "nome": "Pneu de Carga 295/80 R22.5",
+      "marca_sugerida": "Michelin",
+      "observacao": "Verificar o índice de carga e a pressão semanalmente."
+    }
+  ],
+  "filtros": [
+    {
+      "nome": "Filtro de Ar (Pesado)",
+      "marca_sugerida": "Mann-Filter",
+      "observacao": "Trocar a cada 20.000 km em condições de poeira."
+    },
+    {
+      "nome": "Filtro Separador de Água (Racor)",
+      "marca_sugerida": "Parker",
+      "observacao": "Drenar a água acumulada diariamente antes da primeira partida."
+    }
+  ]
+}[
+  {
+    "id": "serv01",
+    "nome": "Troca de Óleo e Filtro",
+    "descricao": "Substituição do óleo do motor e do filtro de óleo.",
+    "custo_estimado": 350.00,
+    "aplicavel_a": ["Carro", "CarroEsportivo", "Caminhao"]
+  },
+  {
+    "id": "serv02",
+    "nome": "Alinhamento e Balanceamento",
+    "descricao": "Ajuste da geometria das rodas e balanceamento dos pneus.",
+    "custo_estimado": 180.00,
+    "aplicavel_a": ["Carro", "CarroEsportivo", "Caminhao"]
+  },
+  {
+    "id": "serv03",
+    "nome": "Revisão de Freios",
+    "descricao": "Inspeção e substituição de pastilhas e discos se necessário.",
+    "custo_estimado": 500.00,
+    "aplicavel_a": ["Carro", "CarroEsportivo"]
+  },
+  {
+    "id": "serv04",
+    "nome": "Inspeção do Sistema de Turbo",
+    "descricao": "Verificação de mangueiras, pressão e performance do turbo.",
+    "custo_estimado": 450.00,
+    "aplicavel_a": ["CarroEsportivo"]
+  },
+  {
+    "id": "serv05",
+    "nome": "Revisão do Motor Diesel",
+    "descricao": "Verificação de bicos injetores e sistema de arrefecimento pesado.",
+    "custo_estimado": 950.00,
+    "aplicavel_a": ["Caminhao"]
+  }
+][
+  {
+    "id_destaque": "dest01",
+    "modelo": "Porsche 911 GT3 RS",
+    "ano": 2024,
+    "imagem_url": "https://files.porsche.com/filestore/image/multimedia/none/992-gt3-rs-modelimage-sideshot/model/cfbb8ed3-1a15-11ed-80f5-005056bbdc38/porsche-model.png",
+    "descricao_destaque": "A perfeição da engenharia alemã para as pistas, homologado para as ruas. Uma experiência de pilotagem pura e visceral.",
+    "especificacao_chave": "Motor: 4.0L Boxer 6 Cil. Aspirado",
+    "cor_destaque": "#93FF7A"
+  },
+  {
+    "id_destaque": "dest02",
+    "modelo": "Scania 770 S V8",
+    "ano": 2023,
+    "imagem_url": "https://www.scania.com/content/dam/group/products-and-services/trucks/s-series/gallery/exterior/Scania-S-series-V8-Exterior-Gallery-1-1920x1080.jpg",
+    "descricao_destaque": "O Rei da Estrada. Combina potência incomparável com o máximo de conforto e tecnologia para longas distâncias.",
+    "especificacao_chave": "Potência: 770 cv",
+    "cor_destaque": "#3498DB"
+  },
+  {
+    "id_destaque": "dest03",
+    "modelo": "Honda Civic Si",
+    "ano": 2022,
+    "imagem_url": "https://www.honda.ca/Content/honda.ca/4e9a4f47-832c-411a-96fd-e8893963458c/GenericContent_FFH/22_Civic_Si_Blazing_Orange_Pearl_fr_3q_Civic_Si_BOP.png",
+    "descricao_destaque": "O sedã esportivo que une diversão ao dirigir no dia a dia com um câmbio manual preciso e um motor turbo eficiente.",
+    "especificacao_chave": "Câmbio: Manual de 6 marchas",
+    "cor_destaque": "#E67E22"
+  }
+]
 }

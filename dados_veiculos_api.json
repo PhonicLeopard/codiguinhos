@@ -1,7 +1,7 @@
-// dados_veiculos_api.json
+
 [
     {
-      "id": "carro_1715190000000_abcde", // <-- SUBSTITUA PELO ID REAL DE UM CARRO SEU
+      "id": "carro_1715190000000_abcde", 
       "valorFIPE_estimado": 48500.00,
       "recall_pendente": false,
       "dica_especifica": "Verificar alinhamento a cada 10.000 km devido ao uso urbano.",
@@ -11,7 +11,7 @@
       "tipo_oleo_recomendado": "5W-30 Sintético"
     },
     {
-      "id": "carroesportivo_1715191000000_fghij", // <-- SUBSTITUA PELO ID REAL DE UM ESPORTIVO SEU
+      "id": "carroesportivo_1715191000000_fghij", 
       "valorFIPE_estimado": 215000.00,
       "recall_pendente": true,
       "dica_especifica": "Aquecer motor por 2 minutos antes de exigir performance máxima.",
@@ -21,7 +21,7 @@
       "tipo_oleo_recomendado": "10W-60 Performance"
     },
     {
-      "id": "caminhao_1715192000000_klmno", // <-- SUBSTITUA PELO ID REAL DE UM CAMINHÃO SEU
+      "id": "caminhao_1715192000000_klmno", 
       "valorFIPE_estimado": 350000.00,
       "recall_pendente": false,
       "dica_especifica": "Verificar pressão dos pneus semanalmente quando carregado.",

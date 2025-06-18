@@ -70,13 +70,70 @@
 
 
           <!-- 1. Estado Padrão / Placeholder -->
-          <div id="panel-placeholder" class="info-panel placeholder-panel">
-            <p>
-              ⬅️ Selecione um veículo na lista, adicione um novo, ou verifique a previsão do tempo.
-            </p>
-          </div>
+          <div id="panel-placeholder" class="placeholder-panel">
+    <!-- Mensagem original mantida -->
+    <p>Selecione um veículo na garagem para ver os detalhes ou adicione um novo.</p>
+    
+    <!-- NOVO: Container para os veículos em destaque -->
+    <div id="destaques-container" class="destaques-container">
+        <hr style="margin: 24px 0;">
+        <h2>✨ Nosso Showroom ✨</h2>
+        <p><em>Uma seleção especial da nossa garagem.</em></p>
+        <!-- Os cards dos veículos em destaque serão inseridos aqui pelo JavaScript -->
+        <div id="cards-veiculos-destaque" class="cards-destaque-grid">
+            <!-- Exemplo de como um card ficará (será gerado dinamicamente) -->
+            <!-- 
+            <div class="card-destaque">
+                <div class="card-destaque-header" style="border-top-color: #ff0000;">
+                    <h4>Porsche 911 GT3 RS (2024)</h4>
+                </div>
+                <img src="..." alt="Porsche 911 GT3 RS">
+                <div class="card-destaque-body">
+                    <p class="card-destaque-desc">Descrição do veículo aqui...</p>
+                    <p class="card-destaque-spec"><strong>Motor:</strong> 4.0L Boxer 6 Cil. Aspirado</p>
+                </div>
+            </div> 
+            <!-- Em index.html, dentro da navegação por abas -->
+<nav id="vehicle-tabs-nav" class="tab-nav" role="tablist">
+    <button class="tab-link active" data-target="#tab-info" role="tab" aria-selected="true">Informações</button>
+    <button class="tab-link" data-target="#tab-manutencao" role="tab">Manutenção</button>
+    <button class="tab-link" data-target="#tab-agendamento" role="tab">Agendamentos</button>
+    <button class="tab-link" data-target="#tab-dicas" role="tab">Dicas</button>
+    <!-- NOVO: Botão da aba de Peças -->
+    <button class="tab-link" data-target="#tab-pecas" role="tab">Peças</button>
+</nav>
+<!-- Em #tab-agendamento, encontre o input-group do "Tipo de Serviço" e SUBSTITUA o input -->
+<div class="input-group">
+    <label for="agendamentoTipo">Tipo de Serviço:</label>
+    <!-- SUBSTITUÍDO: de <input type="text"> para <select> -->
+    <select id="agendamentoTipo" required>
+        <option value="" disabled selected>Carregando serviços...</option>
+        <!-- Os serviços serão preenchidos aqui pelo JavaScript -->
+    </select>
+</div>
 
-          <!-- 2. Estado: Exibindo Detalhes do Veículo Selecionado -->
+<div class="input-group">
+    <label for="manutTipo">Tipo:</label>
+    <!-- SUBSTITUÍDO: de <input type="text"> para <select> -->
+    <select id="manutTipo" required>
+        <option value="" disabled selected>Carregando serviços...</option>
+        <!-- Os serviços serão preenchidos aqui pelo JavaScript -->
+    </select>
+</div>
+
+
+<div id="tab-content-container">
+    
+    
+    <!-- NOVO: Painel de conteúdo para a aba de Peças -->
+    <div id="tab-pecas" class="tab-content" role="tabpanel">
+        <h4>Peças e Fluidos Recomendados</h4>
+        <div id="pecas-recomendadas-content">
+            <p><i>Clique em um veículo para carregar as recomendações...</i></p>
+        </div>
+    </div>
+</div>
+
           <div id="vehicle-details-view" class="hidden">
             <header id="vehicle-detail-header" class="detail-header">
               <img

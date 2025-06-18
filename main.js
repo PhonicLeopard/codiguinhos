@@ -2191,19 +2191,231 @@ function generateDicasHtml(dicas, titulo) {
  * Esta função SUBSTITUI a sua `activateTab` existente.
  * @param {HTMLButtonElement} tabButton
  */
+// js/main.js (SUBSTITUA sua função activateTab existente por esta)
+
 function activateTab(tabButton) {
   if (!(tabButton instanceof HTMLButtonElement) || !tabButton.classList.contains("tab-link")) return;
   if (!DOM.vehicleTabsNav || !DOM.tabContentContainer) return;
 
-  // Desativa todos
-  DOM.vehicleTabsNav.querySelectorAll(".tab-link").forEach(button => {
-    button.classList.remove("active");
-    button.setAttribute("aria-selected", "false");
-  });
-  DOM.tabContentContainer.querySelectorAll(".tab-content").forEach(panel => {
-    panel.classList.remove("active");
-    panel.hidden = true;
-  });
+  // ... (código para desativar abas e painéis) ...
+  
+  tabButton.classList.add("active");
+  tabButton.setAttribute("aria-selected", "true");
+  
+  const targetId = tabButton.dataset.target;
+  if (targetId) {
+    const targetContent = DOM.tabContentContainer.querySelector(targetId);
+    if (targetContent) {
+      targetContent.hidden = false;
+
+      // --- LÓGICA DE CARREGAMENTO SOB DEMANDA ---
+      if (targetId === '#tab-pecas' && currentlySelectedVehicle) {
+          const tipoVeiculo = currentlySelectedVehicle.constructor.name;
+          carregarPecasRecomendadas(tipoVeiculo);
+      }
+      // (a lógica das dicas que já existia pode ser mantida aqui também)
+      if (targetId === '#tab-dicas' && !targetContent.dataset.loaded) {
+          fetchAndDisplayDicas();
+          targetContent.dataset.loaded = 'true';
+      }
+      // -----------------------------------------
+    }
+  }
+}
+  // ... (resto da função como antes) ...
+}
+// js/main.js (Adicione este bloco de código na seção de UI)
+
+// =======================================================
+//      FUNÇÕES DE FETCH E EXIBIÇÃO (NOVOS ENDPOINTS)
+// =======================================================
+
+// --- 1. Lógica para Veículos em Destaque ---
+
+/**
+ * Busca os veículos em destaque do backend e os exibe.
+ */
+async function carregarVeiculosDestaque() {
+    const container = DOM.cardsVeiculosDestaque;
+    if (!container) return; // Se o elemento não existe, não faz nada.
+
+    container.innerHTML = '<p><i>Carregando destaques...</i></p>';
+    try {
+        const response = await fetch(`${backendUrl}/api/veiculos-destaque`);
+        if (!response.ok) {
+            throw new Error(`Falha ao carregar destaques: ${response.statusText}`);
+        }
+        const veiculos = await response.json();
+        exibirVeiculosDestaque(veiculos);
+    } catch (error) {
+        console.error("Erro ao carregar veículos destaque:", error);
+        container.innerHTML = `<p style="color:red;">Não foi possível carregar o showroom. Verifique se o servidor está no ar.</p>`;
+    }
+}
+
+/**
+ * Renderiza os cards dos veículos em destaque na UI.
+ * @param {Array<Object>} veiculos - O array de veículos vindo da API.
+ */
+function exibirVeiculosDestaque(veiculos) {
+    const container = DOM.cardsVeiculosDestaque;
+    if (!container) return;
+    
+    container.innerHTML = ''; // Limpa o "carregando"
+    if (!veiculos || veiculos.length === 0) {
+        container.innerHTML = '<p>Nenhum veículo em destaque no momento.</p>';
+        return;
+    }
+
+    veiculos.forEach(veiculo => {
+        const card = document.createElement('div');
+        card.className = 'card-destaque';
+        card.innerHTML = `
+            <div class="card-destaque-header" style="border-top-color: ${veiculo.cor_destaque || '#ccc'};">
+                <h4>${veiculo.modelo} (${veiculo.ano})</h4>
+            </div>
+            <img src="${veiculo.imagem_url || 'placeholder.png'}" alt="${veiculo.modelo}">
+            <div class="card-destaque-body">
+                <p class="card-destaque-desc">${veiculo.descricao_destaque}</p>
+                <p class="card-destaque-spec"><strong>Destaque:</strong> ${veiculo.especificacao_chave}</p>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+
+// --- 2. Lógica para Serviços Oferecidos ---
+
+/**
+ * Busca a lista de serviços oferecidos e popula os menus dropdown.
+ */
+async function carregarServicosOferecidos() {
+    try {
+        const response = await fetch(`${backendUrl}/api/servicos-oferecidos`);
+        if (!response.ok) {
+            throw new Error('Falha ao carregar lista de serviços.');
+        }
+        const servicos = await response.json();
+        exibirServicosNosSelects(servicos);
+    } catch (error) {
+        console.error("Erro ao carregar serviços:", error);
+        // Atualiza os selects com uma mensagem de erro
+        [DOM.manutTipo, DOM.agendamentoTipo].forEach(select => {
+            if (select) {
+                select.innerHTML = '<option value="">Erro ao carregar serviços</option>';
+            }
+        });
+    }
+}
+
+/**
+ * Preenche os elementos <select> dos formulários com os serviços.
+ * @param {Array<Object>} servicos - O array de serviços vindo da API.
+ */
+function exibirServicosNosSelects(servicos) {
+    const selects = [DOM.manutTipo, DOM.agendamentoTipo];
+    
+    selects.forEach(select => {
+        if (!select) return;
+
+        select.innerHTML = '<option value="" disabled selected>Selecione um serviço...</option>'; // Placeholder
+        
+        servicos.forEach(servico => {
+            const option = document.createElement('option');
+            option.value = servico.id; // Ex: "serv01"
+            const custoFormatado = servico.custo_estimado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            option.textContent = `${servico.nome} (Est. ${custoFormatado})`;
+            select.appendChild(option);
+        });
+    });
+}
+
+
+// --- 3. Lógica para Peças Recomendadas ---
+
+/**
+ * Busca as peças recomendadas para um tipo de veículo específico.
+ * @param {string} tipoVeiculo - O tipo do veículo (ex: 'Carro', 'Caminhao').
+ */
+async function carregarPecasRecomendadas(tipoVeiculo) {
+    const container = DOM.pecasRecomendadasContent;
+    if (!container) return;
+
+    container.innerHTML = '<p><i>Buscando recomendações...</i></p>';
+    try {
+        const response = await fetch(`${backendUrl}/api/pecas-recomendadas/${tipoVeiculo}`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                 container.innerHTML = `<p>Nenhuma recomendação específica encontrada para <strong>${tipoVeiculo}</strong>.</p>`;
+                 return;
+            }
+            throw new Error(`Falha ao carregar peças: ${response.statusText}`);
+        }
+        const pecas = await response.json();
+        exibirPecasRecomendadas(pecas);
+    } catch (error) {
+        console.error("Erro ao carregar peças recomendadas:", error);
+        container.innerHTML = `<p style="color:red;">Não foi possível carregar as recomendações.</p>`;
+    }
+}
+
+/**
+ * Renderiza as peças recomendadas na aba correspondente.
+ * @param {Object} pecasPorCategoria - O objeto de peças agrupado por categoria.
+ */
+function exibirPecasRecomendadas(pecasPorCategoria) {
+    const container = DOM.pecasRecomendadasContent;
+    if (!container) return;
+    
+    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    for (const categoria in pecasPorCategoria) {
+        const divCategoria = document.createElement('div');
+        divCategoria.className = 'pecas-categoria';
+        
+        // Formata o nome da categoria (ex: "oleo_motor" -> "Óleo do Motor")
+        const tituloCategoria = categoria.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        const h5 = document.createElement('h5');
+        h5.textContent = tituloCategoria;
+        divCategoria.appendChild(h5);
+        
+        pecasPorCategoria[categoria].forEach(peca => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'peca-item';
+            itemDiv.innerHTML = `
+                <strong class="peca-nome">${peca.nome}</strong>
+                <span class="peca-marca">Marcas Sugeridas: ${peca.marca_sugerida}</span>
+                <p class="peca-observacao">${peca.observacao}</p>
+            `;
+            divCategoria.appendChild(itemDiv);
+        });
+        
+        fragment.appendChild(divCategoria);
+    }
+    
+    container.appendChild(fragment);
+}
+// js/main.js (no final do arquivo)
+
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM fully loaded and parsed.");
+  if (!cacheDOMElements()) {
+      // ... (código de erro)
+      return;
+  }
+  
+  // ... (outras inicializações como setupEventListeners, carregarGaragemDoLocalStorage...)
+  
+  // --- CHAMADAS PARA CARREGAR NOVOS DADOS NA INICIALIZAÇÃO ---
+  carregarVeiculosDestaque();
+  carregarServicosOferecidos();
+  // -----------------------------------------------------------
+
+  // ... (resto da inicialização, como renderVehicleList, showPanelContent...)
+});
   
   // Ativa o clicado
   tabButton.classList.add("active");
