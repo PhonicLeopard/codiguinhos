@@ -1,107 +1,129 @@
-# Garagem Inteligente PRO 🚗💨
+Garagem Inteligente PRO 🚗💨
+![alt text](https://img.shields.io/badge/status-ativo-brightgreen)
 
-## Visão Geral
-A Garagem Inteligente PRO é uma aplicação web interativa desenvolvida para simular o gerenciamento de uma garagem de veículos. Utilizando conceitos de Programação Orientada a Objetos (POO) em JavaScript puro, a aplicação permite aos usuários adicionar, visualizar, interagir e manter diferentes tipos de veículos (Carros Comuns, Carros Esportivos com turbo e Caminhões com capacidade de carga). Além disso, integra uma funcionalidade de **previsão do tempo para os próximos dias**, auxiliando no planejamento de viagens. Toda a informação da garagem é persistida localmente no navegador através da API LocalStorage, garantindo que os dados não sejam perdidos ao recarregar a página. A interface é construída com HTML semântico e estilizada com CSS moderno, incluindo um layout responsivo.
+![alt text](https://img.shields.io/badge/javascript-ES6%2B-yellow)
 
-## Funcionalidades Principais ✨
-- **Adição de Veículos:** Permite adicionar diferentes tipos de veículos à garagem:
-  - Carro Comum
-  - Carro Esportivo (com funcionalidade de Turbo)
-  - Caminhão (com definição de Capacidade de Carga)
-- **Visualização da Garagem:** Lista todos os veículos presentes na garagem em uma barra lateral (sidebar).
-- **Seleção e Detalhes:** Ao selecionar um veículo na lista, exibe seus detalhes completos em um painel principal, incluindo:
-  - Imagem, Modelo, Cor, ID único.
-  - Status (Ligado/Desligado).
-  - Quilometragem (para Carros e derivados).
-  - Velocidade atual (com barra visual em relação à máxima).
-  - Status do Turbo (para Carros Esportivos).
-  - Carga Atual e Capacidade (para Caminhões).
-  - Histórico de Manutenções passadas.
-  - Agendamentos de Serviços futuros.
-- **Edição Rápida:** Permite alterar rapidamente o Modelo, Cor e URL da Imagem do veículo selecionado.
-- **Interação com Veículos (Ações):**
-  - Ligar / Desligar o motor (com validação de movimento para desligar).
-  - Acelerar (com comportamento diferenciado por tipo de veículo e influência de carga/turbo).
-  - Frear (com comportamento diferenciado por tipo de veículo e influência de carga).
-  - Buzinar (com sons diferentes por tipo de veículo - se implementado no áudio).
-  - Simular Rodagem (aumenta a quilometragem).
-- **Ações Específicas:**
-  - Ativar / Desativar Turbo (para Carros Esportivos).
-  - Carregar / Descarregar (para Caminhões, respeitando a capacidade).
-- **Gerenciamento de Manutenção:**
-  - Registrar serviços de manutenção já realizados (Tipo, Custo, Descrição).
-  - Agendar serviços futuros (Tipo, Data/Hora, Observações).
-- **Previsão do Tempo para Planejamento de Viagem:**
-  - Busca a previsão do tempo para os próximos dias para uma cidade informada.
-  - Utiliza o endpoint **"5 day / 3 hour forecast"** da API OpenWeatherMap.
-  - Exibe um resumo diário incluindo data, temperaturas mínima/máxima, descrição e ícone do tempo.
-  - **⚠️ ALERTA DE SEGURANÇA IMPORTANTE:** A chave da API OpenWeatherMap (API Key) está atualmente armazenada diretamente no código JavaScript do frontend (`weatherService.js`). **Esta é uma prática INSEGURA e NUNCA deve ser feita em aplicações de produção.** A chave fica exposta e pode ser facilmente roubada e utilizada indevidamente, podendo gerar custos ou bloqueio da chave.
-    - **Abordagem Correta (para produção):** A chave API deve ser armazenada e utilizada em um ambiente de backend (servidor). O frontend faria uma requisição para o seu próprio backend, e o backend, por sua vez, faria a requisição segura para a API OpenWeatherMap, adicionando a chave. Isso é conhecido como um "backend proxy". Alternativas incluem o uso de Serverless Functions.
-    - **Simplificação Didática:** Para fins puramente didáticos e simplificação do escopo desta atividade focada no frontend, a chave foi mantida no cliente.
-- **Persistência de Dados:** Todas as informações da garagem (veículos e seus históricos) são salvas automaticamente no LocalStorage do navegador.
-- **Feedback ao Usuário:** Notificações visuais (para sucessos, erros, avisos) e sonoras (para ações principais).
-- **Exclusão de Veículos:** Permite remover permanentemente um veículo da garagem.
-- **Interface Responsiva:** O layout se adapta a diferentes tamanhos de tela (desktop, tablet, mobile).
+![alt text](https://img.shields.io/badge/backend-Node.js%20%26%20Express-lightblue)
 
-## Como Executar Localmente 🚀
-Este projeto é construído com HTML, CSS e JavaScript puro, utilizando módulos ES6.
-
-1.  **Clone o Repositório:**
-    ```bash
-    git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-    ```
-    *(Substitua `SEU-USUARIO/SEU-REPOSITORIO` pelo caminho real do seu repo no GitHub)*
-
-2.  **Navegue até a Pasta:**
-    ```bash
-    cd SEU-REPOSITORIO
-    ```
-
-3.  **Abra o Arquivo HTML:**
-    - A maneira mais simples é abrir o arquivo `index.html` diretamente no seu navegador web (Chrome, Firefox, Edge, etc.).
-    - **Importante (Módulos ES6):** Devido ao uso de `import/export` nos arquivos JavaScript (`type="module"`), alguns navegadores podem restringir o carregamento direto do `file:///` por razões de segurança (CORS). Se a aplicação não carregar corretamente (verifique o console F12 por erros relacionados a módulos ou CORS), é recomendado usar um servidor web local simples:
-        - Se você usa o VS Code, instale a extensão "Live Server" e clique com o botão direito no `index.html` e selecione "Open with Live Server".
-        - Alternativamente, use `npx serve` (se tiver Node.js/npm instalado) na pasta do projeto ou qualquer outro servidor HTTP simples.
-
-## Estrutura do Projeto 📁
+![alt text](https://img.shields.io/badge/licen%C3%A7a-MIT-blue)
+Visão Geral
+A Garagem Inteligente PRO é uma aplicação web full-stack que simula o gerenciamento completo de uma garagem de veículos. O projeto demonstra sólidos conceitos de Programação Orientada a Objetos (POO) no frontend com JavaScript puro, e a utilização de um backend em Node.js com Express para servir dados e atuar como um proxy seguro para APIs externas.
+O usuário pode adicionar, visualizar, interagir e manter diferentes tipos de veículos (Carros Comuns, Esportivos e Caminhões). A aplicação consome dados de um backend local para funcionalidades como "Veículos em Destaque", "Dicas de Manutenção" e "Peças Recomendadas", além de buscar de forma segura a previsão do tempo através de um endpoint proxy, garantindo que a chave da API externa nunca seja exposta no cliente.
+✨ Funcionalidades Principais
+Arquitetura Cliente-Servidor: Frontend desacoplado que consome uma API local Node.js.
+Backend Proxy Seguro: A chave da API OpenWeatherMap é mantida segura no servidor, que faz a requisição em nome do cliente, resolvendo uma vulnerabilidade de segurança crítica.
+API de Dados Mock: O backend serve endpoints para:
+🚗 Veículos em Destaque: Exibe um showroom na tela inicial.
+🛠️ Serviços, Peças e Dicas: Fornece dados dinâmicos de manutenção para cada tipo de veículo.
+Gerenciamento Completo da Garagem:
+Adição de Carros, Carros Esportivos (com turbo) e Caminhões (com carga).
+Edição rápida de propriedades (modelo, cor, imagem).
+Interações realistas (ligar, acelerar, frear) com comportamentos polimórficos.
+Registro e agendamento de manutenções.
+Persistência de Dados: A garagem do usuário é salva no LocalStorage, enquanto dados de apoio são carregados do backend.
+Interface Reativa e Moderna: Construída com HTML semântico e CSS moderno (Flexbox, Grid, Variáveis CSS), com feedback visual e sonoro para o usuário.
+🏛️ Arquitetura da Aplicação
+O projeto segue uma arquitetura cliente-servidor simples, ideal para aprendizado e desenvolvimento.
+Generated mermaid
+graph TD
+    A[👨‍💻 Usuário] -->|Interage com| B(🌐 Navegador - Frontend);
+    B -->|Requisições HTTP (fetch)| C{🚀 Servidor Node.js - Backend};
+    C -->|Carrega dados locais| D[📄 Mock Data (JSON)];
+    C -->|Requisição Segura com API Key| E[🌦️ API Externa - OpenWeatherMap];
+    E -->|Retorna dados| C;
+    D -->|Retorna dados| C;
+    C -->|Envia resposta JSON| B;
 Use code with caution.
-Markdown
+Mermaid
+🛠️ Tecnologias Utilizadas
+Frontend
+HTML5: Estrutura semântica da página.
+CSS3: Estilização avançada com Flexbox, Grid e Variáveis CSS para um layout responsivo e de fácil manutenção.
+JavaScript (ES6+):
+Módulos ES6 (import/export): Organização e modularização do código.
+Programação Orientada a Objetos (POO): Classes, Herança (extends), Polimorfismo e Encapsulamento para modelar os veículos.
+Async/Await: Para chamadas de API assíncronas e mais legíveis.
+Manipulação do DOM: Para criar uma interface dinâmica e interativa.
+APIs do Navegador:
+LocalStorage API: Para persistir o estado da garagem do usuário.
+Fetch API: Para comunicação com o backend.
+Audio API: Para feedback sonoro.
+Backend
+Node.js: Ambiente de execução para o JavaScript no servidor.
+Express.js: Framework minimalista para criação de rotas e da API REST.
+dotenv: Para gerenciar variáveis de ambiente (como a API Key) de forma segura.
+nodemon: Ferramenta de desenvolvimento para reiniciar o servidor automaticamente após alterações no código.
+🚀 Como Executar o Projeto
+Para rodar este projeto, você precisará ter o Node.js (que inclui o npm) e o Git instalados.
+1. Configuração do Backend
+Primeiro, vamos clonar o repositório e configurar o servidor.
+Generated bash
+# Clone o repositório
+git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
+
+# Navegue até a pasta do projeto
+cd SEU-REPOSITORIO
+
+# Instale as dependências do backend
+npm install
+Use code with caution.
+Bash
+Antes de iniciar o servidor, você precisa criar um arquivo de configuração para a sua chave de API.
+Crie um arquivo chamado .env na raiz do projeto.
+Dentro deste arquivo, adicione sua chave da API OpenWeatherMap. Você pode obter uma gratuitamente no site deles.
+Generated ini
+# Arquivo: .env
+OPENWEATHER_API_KEY_BACKEND="SUA_CHAVE_API_AQUI"
+PORT=3001
+Use code with caution.
+Ini
+Agora, inicie o servidor backend:
+Generated bash
+# Inicia o servidor em modo de desenvolvimento (reinicia automaticamente)
+npm run dev
+
+# Ou, para iniciar normalmente:
+node server.js
+Use code with caution.
+Bash
+O terminal deverá exibir a mensagem Servidor backend rodando na porta 3001.
+2. Execução do Frontend
+Com o backend rodando, o frontend pode ser aberto em seu navegador.
+Use a extensão "Live Server" no VS Code:
+Clique com o botão direito no arquivo index.html.
+Selecione "Open with Live Server".
+Isso é recomendado pois garante que o JavaScript (módulos ES6) e as chamadas para http://localhost:3001 funcionem corretamente.
+Alternativa (sem Live Server):
+Abra o arquivo index.html diretamente no navegador.
+Atenção: Alguns navegadores podem bloquear as requisições do frontend (rodando em file:///) para o backend (em localhost). O uso do Live Server evita esse problema de CORS.
+Agora a aplicação deve estar totalmente funcional!
+📁 Estrutura do Projeto
+Generated code
 GaragemInteligentePRO/
-├── index.html # Arquivo principal da interface do usuário
-├── style.css # Folha de estilos principal
-├── js/ # Pasta contendo todo o código JavaScript
-│ ├── main.js # Ponto de entrada: UI, eventos, inicialização
-│ ├── weatherService.js # Lógica para API OpenWeatherMap (previsão)
-│ ├── Manutencao.js # Definição da classe Manutencao
-│ ├── Veiculo.js # Definição da classe base Veiculo
-│ ├── Carro.js # Definição da classe Carro (herda de Veiculo)
-│ ├── CarroEsportivo.js # Definição da classe CarroEsportivo (herda de Carro)
-│ └── Caminhao.js # Definição da classe Caminhao (herda de Carro)
-├── sounds/ # Pasta para arquivos de áudio (feedback sonoro)
-│ ├── ligar.mp3
-│ ├── desligar.mp3
-│ ├── buzina_carro.mp3
-│ └── ... # Outros arquivos .mp3
-├── dados_veiculos_api.json # Dados simulados para a API de detalhes de veículos
-├── placeholder.png # Imagem padrão para veículos sem URL definida
-└── README.md # Este arquivo de documentação
-## Tecnologias Utilizadas 🛠️
-- **HTML5:** Estrutura semântica da página.
-- **CSS3:** Estilização e layout da interface.
-  - Variáveis CSS (Custom Properties): Para fácil manutenção do tema.
-  - Flexbox & Grid: Para organização do layout responsivo.
-- **JavaScript (ES6+):** Lógica principal da aplicação.
-  - Módulos ES6: Organização do código (`import/export`).
-  - Async/Await: Para chamadas de API assíncronas.
-  - Programação Orientada a Objetos (POO):
-    - Classes: Para modelar `Veiculo`, `Carro`, `CarroEsportivo`, `Caminhao`, `Manutencao`.
-    - Herança: Reutilização de código (`extends`).
-    - Polimorfismo: Métodos com comportamento específico por classe (ex: `getDisplayInfo`, `acelerar`).
-    - Encapsulamento: Agrupamento de dados e comportamento.
-  - DOM Manipulation: Interação com a estrutura HTML para atualizar a UI.
-  - Event Handling: Captura de interações do usuário (cliques, submits, etc.).
-- **APIs Externas:**
-  - OpenWeatherMap API: Para busca de previsão do tempo.
-- **LocalStorage API:** Persistência dos dados da garagem no navegador.
-- **JSON:** Serialização/Desserialização dos dados para o LocalStorage e comunicação com APIs.
-- **JSDoc:** Formato de comentário para documentação do código JavaScript.
+├── .gitignore               # Arquivos a serem ignorados pelo Git
+├── index.html               # Estrutura principal da UI (Frontend)
+├── style.css                # Folha de estilos (Frontend)
+├── main.js                  # Ponto de entrada do JS, lógica da UI (Frontend)
+├── weatherService.js        # Lógica para consumir a API de previsão do tempo (Frontend)
+├── Veiculo.js               # Classe base `Veiculo` (Frontend)
+├── Carro.js                 # Classe `Carro` (Frontend)
+├── CarroEsportivo.js        # Classe `CarroEsportivo` (Frontend)
+├── Caminhao.js              # Classe `Caminhao` (Frontend)
+├── Manutencao.js            # Classe `Manutencao` (Frontend)
+├── server.js                # Arquivo do servidor Express (Backend)
+├── package.json             # Dependências e scripts do projeto Node.js
+├── package-lock.json        # Lockfile das dependências
+├── dados_veiculos_api.json  # Dados simulados para uma API (não usado diretamente)
+├── sounds/                  # Pasta com os arquivos de áudio
+└── README.md                # Esta documentação
+Use code with caution.
+🌐 Endpoints da API (Backend)
+O servidor local (localhost:3001) fornece os seguintes endpoints:
+Método	Rota	Descrição
+GET	/api/weather?city={cidade}	Proxy para OpenWeatherMap. Busca a previsão para a cidade informada.
+GET	/api/veiculos-destaque	Retorna uma lista de veículos para o showroom da página inicial.
+GET	/api/servicos-oferecidos	Retorna a lista de todos os serviços de manutenção disponíveis.
+GET	/api/revisao/:vehicleId	Retorna dados de revisão (mock) para um ID de veículo específico.
+GET	/api/dicas-manutencao/:tipoVeiculo?	Retorna dicas de manutenção para um tipo de veículo ou dicas gerais.
+GET	/api/pecas-recomendadas/:tipoVeiculo	Retorna peças e fluidos recomendados para um tipo de veículo.
+
