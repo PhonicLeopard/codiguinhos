@@ -1,15 +1,64 @@
 // backend-proxy/server.js
 
+// =======================================================
+//                 IMPORTS E CONFIGURAÇÃO INICIAL
+// =======================================================
+require('dotenv').config(); // Carrega variáveis do .env. DEVE SER UMA DAS PRIMEIRAS LINHAS!
 const express = require('express');
+const mongoose = require('mongoose'); // CORRIGIDO: Usando require
+
 const app = express();
-// O uso de 'node-fetch' pode ser necessário se você estiver em uma versão do Node.js
-// que não tem 'fetch' globalmente. As versões mais recentes (18+) já o incluem.
-// const fetch = require('node-fetch'); 
-require('dotenv').config();
-
 const PORT = process.env.PORT || 3001;
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY_BACKEND;
+const mongoUriCrud = process.env.MONGO_URI_CRUD;
 
+// =======================================================
+//                 MIDDLEWARES
+// =======================================================
+app.use(express.json()); // Middleware para o Express entender requisições com corpo em JSON. Essencial para o futuro.
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
+// =======================================================
+//          FUNÇÃO DE CONEXÃO COM O BANCO DE DADOS
+// =======================================================
+async function connectToDatabase() {
+    if (!mongoUriCrud) {
+        console.error("ERRO FATAL: A variável de ambiente MONGO_URI_CRUD não está definida no seu arquivo .env!");
+        process.exit(1);
+    }
+    try {
+        await mongoose.connect(mongoUriCrud);
+        console.log("🚀 Conectado ao MongoDB Atlas (CRUD) via Mongoose!");
+    } catch (error) {
+        console.error("❌ ERRO FATAL: Falha ao conectar ao MongoDB. Verifique sua string de conexão, senha e acesso de rede no Atlas.", error);
+        process.exit(1);
+    }
+}
+
+// =======================================================
+//          ROTAS / ENDPOINTS DA API
+// =======================================================
+app.get('/', (req, res) => {
+    res.send('API da Garagem Inteligente PRO está no ar!');
+});
+
+// (Outras rotas com dados mockados virão aqui)
+
+// =======================================================
+//          INICIALIZAÇÃO DO SERVIDOR
+// =======================================================
+async function startServer() {
+    await connectToDatabase(); // 1. Garante que a conexão com o banco seja estabelecida
+
+    app.listen(PORT, () => { // 2. Só então, inicia o servidor
+        console.log(`✅ Servidor backend rodando e ouvindo na porta ${PORT}`);
+    });
+}
+
+startServer(); // Inicia todo o processo
 // Middleware para permitir CORS (Cross-Origin Resource Sharing)
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); // Para desenvolvimento. Em produção, restrinja.
