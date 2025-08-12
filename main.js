@@ -292,4 +292,41 @@ window.addEventListener("DOMContentLoaded", () => {
     initializeGarage();
     showPanelContent("placeholder");
     console.log("✅ Aplicação pronta e estável!");
+    // A função `initializeGarage` e a `instantiateVehicle` devem funcionar
+// quase sem alterações, pois o backend com `.populate()` já está enviando os dados completos.
+
+// ...
+
+// ATUALIZE A FUNÇÃO handleMaintenanceSubmit
+async function handleMaintenanceSubmit(event, isFuture) {
+    event.preventDefault();
+    if (!currentlySelectedVehicle) return;
+
+    const form = event.target;
+    // Crie o objeto de dados da manutenção a partir do formulário
+    const maintenanceData = {
+        data: new Date(form.elements[0].value + "T12:00:00"),
+        tipo: form.elements[1].value.trim(),
+        custo: isFuture ? 0 : parseFloat(form.elements[2].value),
+    };
+    
+    try {
+        // Use a nova rota para CRIAR a manutenção
+        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}/manutencoes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(maintenanceData),
+        });
+
+        // A lógica de sucesso permanece a mesma
+        await initializeGarage(); // Busca todos os dados de novo para garantir consistência
+        currentlySelectedVehicle = garage.find(v => v.id === currentlySelectedVehicle.id); // Re-seleciona o veículo
+        renderMaintenanceLists();
+        form.reset();
+        showNotification(`Serviço ${isFuture ? 'agendado' : 'registrado'} com sucesso!`, 'success');
+    } catch (error) {
+        // O erro já é tratado pela fetchAPI
+        console.error("Falha ao submeter manutenção:", error);
+    }
+}
 });

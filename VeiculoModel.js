@@ -1,42 +1,29 @@
-// models/VeiculoModel.js
-
 const mongoose = require('mongoose');
 
-// Define a estrutura (Schema) para os veículos no MongoDB
-const veiculoSchema = new mongoose.Schema({
+const manutencaoSchema = new mongoose.Schema({
   tipo: { 
     type: String, 
+    required: [true, 'A descrição do serviço é obrigatória.'] 
+  },
+  data: { 
+    type: Date, 
     required: true, 
-    enum: ['Carro', 'CarroEsportivo', 'Caminhao'] 
+    default: Date.now 
   },
-  modelo: { 
-    type: String, 
-    required: [true, 'O modelo do veículo é obrigatório.'] 
+  custo: { 
+    type: Number, 
+    required: true, 
+    min: 0, 
+    default: 0 
   },
-  cor: { 
-    type: String, 
-    required: [true, 'A cor do veículo é obrigatória.'] 
-  },
-  imagem: { 
-    type: String, 
-    default: 'placeholder.png' 
-  },
-  // Campo específico para caminhões. Não é obrigatório para outros tipos.
-  capacidadeCarga: { 
-    type: Number,
-    default: 0
-  },
-  // Armazena todos os registros de manutenção (passados e futuros)
-  historicoManutencoes: {
-    type: [Object],
-    default: []
+  // A referência chave para o veículo ao qual esta manutenção pertence.
+  veiculo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Veiculo', // Diz ao Mongoose que este ID se refere a um documento na coleção 'Veiculo'
+    required: true
   }
-}, {
-  // Adiciona os campos `createdAt` e `updatedAt` automaticamente
-  timestamps: true 
-});
+}, { timestamps: true });
 
-// Cria e exporta o Modelo 'Veiculo' que usaremos para interagir com a coleção 'veiculos'
-const Veiculo = mongoose.model('Veiculo', veiculoSchema);
+const Manutencao = mongoose.model('Manutencao', manutencaoSchema);
 
-module.exports = Veiculo;
+module.exports = Manutencao;
