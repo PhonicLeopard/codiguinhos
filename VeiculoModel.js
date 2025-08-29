@@ -1,29 +1,26 @@
+// models/VeiculoModel.js
 const mongoose = require('mongoose');
 
-const manutencaoSchema = new mongoose.Schema({
+const veiculoSchema = new mongoose.Schema({
+  modelo: { type: String, required: [true, 'O modelo é obrigatório.'] },
+  cor: { type: String, required: [true, 'A cor é obrigatória.'] },
   tipo: { 
     type: String, 
-    required: [true, 'A descrição do serviço é obrigatória.'] 
+    required: [true, 'O tipo é obrigatório.'],
+    enum: ['Carro', 'CarroEsportivo', 'Caminhao']
   },
-  data: { 
-    type: Date, 
-    required: true, 
-    default: Date.now 
-  },
-  custo: { 
-    type: Number, 
-    required: true, 
-    min: 0, 
-    default: 0 
-  },
-  // A referência chave para o veículo ao qual esta manutenção pertence.
-  veiculo: {
+  imagem: { type: String, default: 'placeholder.png' },
+  capacidadeCarga: { type: Number, default: 0 },
+  
+  historicoManutencoes: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Veiculo', // Diz ao Mongoose que este ID se refere a um documento na coleção 'Veiculo'
-    required: true
-  }
-}, { timestamps: true });
+    ref: 'Manutencao' 
+  }]
 
-const Manutencao = mongoose.model('Manutencao', manutencaoSchema);
+}, { 
+  timestamps: true 
+});
 
-module.exports = Manutencao;
+const Veiculo = mongoose.model('Veiculo', veiculoSchema);
+
+module.exports = Veiculo;

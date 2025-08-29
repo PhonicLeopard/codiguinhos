@@ -1,17 +1,18 @@
-// main.js
+console.log
 
-// --- Importações de Módulos (permanecem as mesmas) ---
-import Veiculo from './js/Veiculo.js';
-import Carro from './js/Carro.js';
-import CarroEsportivo from './js/CarroEsportivo.js';
-import Caminhao from './js/Caminhao.js';
-import Manutencao from './js/Manutencao.js';
-import weatherService from './js/weatherService.js';
+import Veiculo from './Veiculo.js';
+import Carro from './Carro.js';
+import CarroEsportivo from './CarroEsportivo.js';
+import Caminhao from './Caminhao.js';
+import Manutencao from './Manutencao.js';
+import weatherService from './weatherService.js';
 
 // --- Estado da Aplicação e Constantes ---
 const backendUrl = "http://localhost:3001/api";
 let garage = [];
 let currentlySelectedVehicle = null;
+
+// --- Cache Centralizado de Elementos DOM ---
 const DOM = {};
 
 // ==========================================================================
@@ -34,62 +35,8 @@ async function fetchAPI(endpoint, options = {}) {
 }
 
 // ==========================================================================
-//                        FUNÇÃO CHAVE CORRIGIDA
+//                  FUNÇÕES DE INICIALIZAÇÃO E RENDERIZAÇÃO
 // ==========================================================================
-
-/**
- * Lida com o envio do formulário de adicionar novo veículo.
- * Esta é a versão corrigida e mais robusta.
- */
-async function handleAddFormSubmit(event) {
-    event.preventDefault(); // Impede o recarregamento da página
-
-    // 1. Coleta os dados do formulário
-    const vehicleData = {
-        tipo: DOM.addVehicleType.value,
-        modelo: DOM.addModelo.value.trim(),
-        cor: DOM.addCor.value.trim(),
-        imagem: DOM.addImagem.value.trim(),
-    };
-    
-    // 2. Adiciona o campo capacidadeCarga apenas se for um caminhão
-    if (vehicleData.tipo === 'Caminhao') {
-        vehicleData.capacidadeCarga = Number(DOM.addCapacidade.value);
-    }
-
-    try {
-        // 3. Envia os dados para a API criar o veículo no backend
-        await fetchAPI('/veiculos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(vehicleData),
-        });
-
-        // 4. Se a criação foi bem-sucedida, exibe uma notificação
-        showNotification(`Veículo "${vehicleData.modelo}" adicionado com sucesso!`, 'success');
-        
-        // 5. Limpa e esconde o formulário
-        DOM.addVehicleForm.reset();
-        handleAddTypeChange();
-        showPanelContent('placeholder');
-
-        // 6. ATUALIZAÇÃO ROBUSTA: Em vez de manipular o array local,
-        // busca a lista inteira e atualizada do servidor. Isso garante
-        // que a interface sempre reflita o estado real do banco de dados.
-        await initializeGarage();
-
-    } catch (error) {
-        // O erro já é exibido pela função fetchAPI, então não precisamos fazer nada aqui.
-        console.error("Falha ao submeter o formulário de novo veículo.");
-    }
-}
-
-
-// ==========================================================================
-//            OUTRAS FUNÇÕES (sem alterações críticas, mas incluídas para completude)
-// ==========================================================================
-
-// --- Funções de Inicialização e Renderização ---
 
 async function initializeGarage() {
     try {
@@ -101,21 +48,17 @@ async function initializeGarage() {
     }
 }
 
-function cacheDOMElements() {
-    const ids = ["vehicle-list", "panel-placeholder", "vehicle-details-view", "add-vehicle-form-view", "notification-area", "add-vehicle-form", "add-vehicle-type", "add-modelo", "add-cor", "add-imagem", "add-capacidade", "btn-show-add-vehicle-form", "btn-cancel-add-vehicle", "detail-vehicle-img", "detail-vehicle-name", "quick-edit-model", "quick-edit-color", "quick-edit-image", "btn-save-quick-edit", "base-vehicle-details", "tab-content-container", "btn-delete-vehicle", "maintenance-history-list", "schedule-list", "register-maint-form", "registroData", "registroProblema", "registroCusto", "schedule-maint-form", "agendamentoData", "agendamentoProblema", "cidade-input", "btn-buscar-previsao", "previsao-tempo-resultado"];
-    ids.forEach(id => DOM[id.replace(/-([a-z])/g, g => g[1].toUpperCase())] = document.getElementById(id));
-    DOM.addCapacidadeGroup = DOM.addVehicleForm.querySelector('.specific-field[data-type="Caminhao"]');
-    DOM.tabNav = document.querySelector('.tab-nav');
-}
-
 function instantiateVehicle(data) {
-    data.id = data._id;
     let vehicle;
+    // Usa o _id do MongoDB como o ID principal
+    data.id = data._id; 
+    
     switch (data.tipo) {
         case "CarroEsportivo": vehicle = new CarroEsportivo(data); break;
         case "Caminhao": vehicle = new Caminhao(data); break;
         default: vehicle = new Carro(data); break;
     }
+    // Converte os dados puros de manutenção em objetos da classe Manutencao
     vehicle.historicoManutencoes = (data.historicoManutencoes || []).map(m => Manutencao.fromPlainObject(m));
     return vehicle;
 }
@@ -149,6 +92,7 @@ function displaySelectedVehicleDetails() {
 }
 
 function renderMaintenanceLists() {
+    if (!currentlySelectedVehicle) return;
     renderList(DOM.maintenanceHistoryList, currentlySelectedVehicle.getPastMaintenances(), "Nenhum serviço no histórico.");
     renderList(DOM.scheduleList, currentlySelectedVehicle.getFutureMaintenances(), "Nenhum serviço agendado.");
 }
@@ -166,13 +110,23 @@ function renderList(ulElement, items, placeholder) {
     });
 }
 
+// ==========================================================================
+//               MANIPULADORES DE PAINEL E NOTIFICAÇÕES
+// ==========================================================================
+
 function showPanelContent(contentType) {
     [DOM.panelPlaceholder, DOM.vehicleDetailsView, DOM.addVehicleFormView].forEach(p => p.classList.add("hidden"));
-    const panelToShow = { details: DOM.vehicleDetailsView, addForm: DOM.addVehicleFormView }[contentType] || DOM.panelPlaceholder;
+    
+    let panelToShow;
+    if (contentType === 'details') panelToShow = DOM.vehicleDetailsView;
+    else if (contentType === 'addForm') panelToShow = DOM.addVehicleFormView;
+    else panelToShow = DOM.panelPlaceholder;
+    
     panelToShow.classList.remove("hidden");
+    
     if (contentType !== "details") {
         currentlySelectedVehicle = null;
-        renderVehicleList();
+        renderVehicleList(); // Remove a seleção da lista
     }
 }
 
@@ -184,7 +138,9 @@ function showNotification(message, type = "success", duration = 4000) {
     setTimeout(() => el.remove(), duration);
 }
 
-// --- Outros Handlers ---
+// ==========================================================================
+//                 HANDLERS DE EVENTOS (AÇÕES DO USUÁRIO)
+// ==========================================================================
 
 function handleVehicleSelection(id) {
     currentlySelectedVehicle = garage.find(v => v.id === id);
@@ -192,53 +148,109 @@ function handleVehicleSelection(id) {
     renderVehicleList();
     displaySelectedVehicleDetails();
     showPanelContent("details");
-    activateTab(DOM.tabNav.querySelector('.tab-link'));
+    activateTab(DOM.tabNav.querySelector('.tab-link')); // Ativa a primeira aba
+}
+
+async function handleAddFormSubmit(event) {
+    event.preventDefault();
+    const vehicleData = {
+        tipo: DOM.addVehicleType.value,
+        modelo: DOM.addModelo.value.trim(),
+        cor: DOM.addCor.value.trim(),
+        imagem: DOM.addImagem.value.trim() || 'placeholder.png',
+    };
+    if (vehicleData.tipo === 'Caminhao') {
+        vehicleData.capacidadeCarga = Number(DOM.addCapacidade.value);
+    }
+    try {
+        await fetchAPI('/veiculos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(vehicleData),
+        });
+        showNotification(`Veículo "${vehicleData.modelo}" adicionado com sucesso!`, 'success');
+        DOM.addVehicleForm.reset();
+        handleAddTypeChange();
+        showPanelContent('placeholder');
+        await initializeGarage(); // Busca a lista atualizada do servidor
+    } catch (error) {
+        console.error("Falha ao adicionar veículo.");
+    }
+}
+
+async function handleUpdateQuickEdit() {
+    if (!currentlySelectedVehicle) return;
+    const updatedData = {
+        modelo: DOM.quickEditModel.value.trim(),
+        cor: DOM.quickEditColor.value.trim(),
+        imagem: DOM.quickEditImage.value.trim() || 'placeholder.png'
+    };
+    try {
+        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        });
+        await initializeGarage();
+        currentlySelectedVehicle = garage.find(v => v.id === currentlySelectedVehicle.id);
+        displaySelectedVehicleDetails();
+        showNotification("Veículo atualizado!", "success");
+    } catch (error) {
+        console.error("Falha ao atualizar veículo.");
+    }
+}
+
+async function handleDeleteVehicle() {
+    if (!currentlySelectedVehicle || !confirm(`Tem certeza que deseja excluir o ${currentlySelectedVehicle.modelo}?`)) return;
+    try {
+        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}`, { method: 'DELETE' });
+        showPanelContent('placeholder');
+        showNotification('Veículo excluído com sucesso.', 'success');
+        await initializeGarage();
+    } catch (error) {
+        console.error("Falha ao excluir veículo.");
+    }
 }
 
 async function handleMaintenanceSubmit(event, isFuture) {
     event.preventDefault();
     if (!currentlySelectedVehicle) return;
     const form = event.target;
-    const data = new Date(form.elements[0].value + "T12:00:00");
-    const problema = form.elements[1].value.trim();
-    const custo = isFuture ? 0 : parseFloat(form.elements[2].value);
+    let maintenanceData;
+
     try {
-        const novaManutencao = new Manutencao(data, problema, custo);
-        const updatedHistory = [...currentlySelectedVehicle.historicoManutencoes, novaManutencao];
-        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ historicoManutencoes: updatedHistory }) });
-        await initializeGarage(); // Busca todos os dados de novo para garantir consistência
-        currentlySelectedVehicle = garage.find(v => v.id === currentlySelectedVehicle.id); // Re-seleciona o veículo
+        if (isFuture) {
+            const data = DOM.agendamentoData.value;
+            const tipo = DOM.agendamentoProblema.value.trim();
+            if (!data || !tipo) throw new Error("Data e Serviço são obrigatórios.");
+            maintenanceData = { data: new Date(data + "T12:00:00"), tipo: tipo, custo: 0 };
+        } else {
+            const data = DOM.registroData.value;
+            const tipo = DOM.registroProblema.value.trim();
+            const custo = parseFloat(DOM.registroCusto.value);
+            if (!data || !tipo) throw new Error("Data e Serviço são obrigatórios.");
+            if (isNaN(custo) || custo < 0) throw new Error("O custo é inválido.");
+            maintenanceData = { data: new Date(data + "T12:00:00"), tipo: tipo, custo: custo };
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+        return;
+    }
+
+    try {
+        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}/manutencoes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(maintenanceData),
+        });
+        await initializeGarage();
+        currentlySelectedVehicle = garage.find(v => v.id === currentlySelectedVehicle.id);
         renderMaintenanceLists();
         form.reset();
         showNotification(`Serviço ${isFuture ? 'agendado' : 'registrado'} com sucesso!`, 'success');
-    } catch (error) { /* Erro já tratado */ }
-}
-
-async function handleUpdateQuickEdit() {
-    if (!currentlySelectedVehicle) return;
-    const updatedData = { modelo: DOM.quickEditModel.value.trim(), cor: DOM.quickEditColor.value.trim(), imagem: DOM.quickEditImage.value.trim() || 'placeholder.png' };
-    try {
-        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData) });
-        await initializeGarage(); // Recarrega tudo para garantir
-        currentlySelectedVehicle = garage.find(v => v.id === currentlySelectedVehicle.id);
-        displaySelectedVehicleDetails();
-        showNotification("Veículo atualizado!", "success");
-    } catch (error) { /* Erro já tratado */ }
-}
-
-async function handleDeleteVehicle() {
-    if (!currentlySelectedVehicle) return;
-    if (!confirm(`Tem certeza que deseja excluir o ${currentlySelectedVehicle.modelo}?`)) return;
-    try {
-        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}`, { method: 'DELETE' });
-        showPanelContent('placeholder');
-        showNotification('Veículo excluído com sucesso.', 'success');
-        await initializeGarage(); // Recarrega a lista
-    } catch (error) { /* Erro já tratado */ }
-}
-
-function handleAddTypeChange() {
-    DOM.addCapacidadeGroup.classList.toggle('hidden', DOM.addVehicleType.value !== 'Caminhao');
+    } catch (error) {
+        console.error("Falha ao submeter manutenção.");
+    }
 }
 
 async function handleFetchWeather() {
@@ -249,7 +261,7 @@ async function handleFetchWeather() {
         const rawData = await weatherService.buscarPrevisaoDetalhada(cidade);
         const processedData = weatherService.processarDadosForecast(rawData);
         DOM.previsaoTempoResultado.innerHTML = '';
-        if (!processedData) throw new Error("Não foi possível processar os dados da previsão.");
+        if (!processedData) throw new Error("Não foi possível processar os dados.");
         const container = document.createElement('div');
         container.className = 'forecast-days-container';
         processedData.forEach(day => {
@@ -261,6 +273,10 @@ async function handleFetchWeather() {
     }
 }
 
+function handleAddTypeChange() {
+    DOM.addCapacidadeGroup.classList.toggle('hidden', DOM.addVehicleType.value !== 'Caminhao');
+}
+
 function activateTab(tabElement) {
     if (!tabElement) return;
     DOM.tabNav.querySelector('.active')?.classList.remove('active');
@@ -269,6 +285,20 @@ function activateTab(tabElement) {
     DOM.tabContentContainer.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.toggle('hidden', `#${tab.id}` !== targetId);
     });
+}
+
+// ==========================================================================
+//                     SETUP E INICIALIZAÇÃO
+// ==========================================================================
+
+function cacheDOMElements() {
+    const ids = ["vehicle-list", "panel-placeholder", "vehicle-details-view", "add-vehicle-form-view", "notification-area", "add-vehicle-form", "add-vehicle-type", "add-modelo", "add-cor", "add-imagem", "add-capacidade", "btn-show-add-vehicle-form", "btn-cancel-add-vehicle", "detail-vehicle-img", "detail-vehicle-name", "quick-edit-model", "quick-edit-color", "quick-edit-image", "btn-save-quick-edit", "base-vehicle-details", "tab-content-container", "btn-delete-vehicle", "maintenance-history-list", "schedule-list", "register-maint-form", "registroData", "registroProblema", "registroCusto", "schedule-maint-form", "agendamentoData", "agendamentoProblema", "cidade-input", "btn-buscar-previsao", "previsao-tempo-resultado"];
+    ids.forEach(id => {
+        const camelCaseId = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
+        DOM[camelCaseId] = document.getElementById(id);
+    });
+    DOM.addCapacidadeGroup = DOM.addVehicleForm.querySelector('.specific-field[data-type="Caminhao"]');
+    DOM.tabNav = document.querySelector('.tab-nav');
 }
 
 function setupEventListeners() {
@@ -285,6 +315,7 @@ function setupEventListeners() {
     DOM.tabNav.addEventListener('click', (e) => { if (e.target.matches('.tab-link')) activateTab(e.target); });
 }
 
+// Ponto de entrada da aplicação
 window.addEventListener("DOMContentLoaded", () => {
     console.log("DOM carregado. Iniciando Garagem Inteligente PRO...");
     cacheDOMElements();
@@ -292,41 +323,4 @@ window.addEventListener("DOMContentLoaded", () => {
     initializeGarage();
     showPanelContent("placeholder");
     console.log("✅ Aplicação pronta e estável!");
-    // A função `initializeGarage` e a `instantiateVehicle` devem funcionar
-// quase sem alterações, pois o backend com `.populate()` já está enviando os dados completos.
-
-// ...
-
-// ATUALIZE A FUNÇÃO handleMaintenanceSubmit
-async function handleMaintenanceSubmit(event, isFuture) {
-    event.preventDefault();
-    if (!currentlySelectedVehicle) return;
-
-    const form = event.target;
-    // Crie o objeto de dados da manutenção a partir do formulário
-    const maintenanceData = {
-        data: new Date(form.elements[0].value + "T12:00:00"),
-        tipo: form.elements[1].value.trim(),
-        custo: isFuture ? 0 : parseFloat(form.elements[2].value),
-    };
-    
-    try {
-        // Use a nova rota para CRIAR a manutenção
-        await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}/manutencoes`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(maintenanceData),
-        });
-
-        // A lógica de sucesso permanece a mesma
-        await initializeGarage(); // Busca todos os dados de novo para garantir consistência
-        currentlySelectedVehicle = garage.find(v => v.id === currentlySelectedVehicle.id); // Re-seleciona o veículo
-        renderMaintenanceLists();
-        form.reset();
-        showNotification(`Serviço ${isFuture ? 'agendado' : 'registrado'} com sucesso!`, 'success');
-    } catch (error) {
-        // O erro já é tratado pela fetchAPI
-        console.error("Falha ao submeter manutenção:", error);
-    }
-}
 });
