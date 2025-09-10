@@ -475,3 +475,101 @@ h2 {
     text-align: center;
   }
 }
+#weather-filter-buttons {
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+#weather-filter-buttons .btn.active {
+    background-color: var(--primary-color);
+    filter: brightness(1.2);
+}
+
+.forecast-day-card {
+    cursor: pointer; /* Indicates interactivity */
+}
+
+.forecast-day-card .description {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: var(--secondary-color);
+    transition: all 0.3s ease;
+}
+
+.forecast-day-card.expanded {
+    background-color: var(--medium-gray);
+}
+/* Add these styles to the end of /style.css */
+
+/* Style for the active filter button */
+#weather-filter-buttons .btn.active {
+  background-color: var(--primary-color);
+  font-weight: bold;
+  box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+/* Make forecast cards feel interactive */
+.forecast-day-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Style for the card when its details are expanded */
+.forecast-day-card.expanded {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+  background-color: var(--medium-gray);
+}
+
+/* The detailed description inside the card */
+.forecast-day-card .description {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: var(--secondary-color);
+}
+/* --- ESTILOS ADICIONAIS PARA INTERATIVIDADE DO CLIMA --- */
+
+/* Estilo para o botão de filtro de dia que está ativo */
+#weather-filter-buttons .btn.active {
+  background-color: var(--primary-color);
+  font-weight: bold;
+  box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+/* Adiciona um cursor de ponteiro para indicar que os cards são clicáveis */
+.forecast-day-card {
+  cursor: pointer;
+}
+
+/* Estilo para o card do dia quando ele está expandido para mostrar detalhes */
+.forecast-day-card.expanded {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+  background-color: var(--medium-gray);
+}
+
+/* A descrição detalhada dentro do card do dia */
+.forecast-day-card .description {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: var(--secondary-color);
+}
+#weather-filter-buttons {
+    justify-content: center;
+    margin-bottom: 16px;
+}
+#weather-filter-buttons .btn.active {
+    background-color: var(--primary-color);
+    font-weight: bold;
+}
+.forecast-day-card {
+    cursor: pointer;
+}
+.forecast-day-card.expanded {
+    background-color: var(--medium-gray);
+}
+.forecast-day-card .description {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: var(--secondary-color);
+}

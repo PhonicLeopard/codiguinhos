@@ -74,35 +74,53 @@
             </div>
           </header>
 
-          <nav class="tab-nav">
-            <button class="tab-link active" data-target="#tab-info">Informações</button>
-            <button class="tab-link" data-target="#tab-register-maint">Registrar Serviço</button>
-            <button class="tab-link" data-target="#tab-schedule-maint">Agendar Serviço</button>
-            <button class="tab-link" data-target="#tab-weather">Clima</button>
-          </nav>
+             <nav class="tab-nav">
+     <button class="tab-link active" data-target="#tab-info">Informações</button>
+     <!-- *** ADICIONE A LINHA ABAIXO *** -->
+     <button class="tab-link" data-target="#tab-vehicle-actions">Veículo</button> 
+     <button class="tab-link" data-target="#tab-register-maint">Registrar Serviço</button>
+     <button class="tab-link" data-target="#tab-schedule-maint">Agendar Serviço</button>
+     <button class="tab-link" data-target="#tab-weather">Clima</button>
+   </nav>
 
           <div id="tab-content-container">
             <!-- Aba de Informações Gerais -->
-            <div id="tab-info" class="tab-content">
-              <h4>Painel de Bordo</h4>
-              <div id="base-vehicle-details" class="info-panel"></div>
-              <h4>Serviços Agendados</h4>
-              <div class="schedule-list-container info-panel"><ul id="schedule-list" class="maintenance-list"></ul></div>
-              <h4>Histórico de Serviços Realizados</h4>
-              <div class="maintenance-list-container info-panel"><ul id="maintenance-history-list" class="maintenance-list"></ul></div>
-              <div class="delete-area"><button id="btn-delete-vehicle" class="btn btn-danger">Excluir Veículo</button></div>
-            </div>
+            <div id="tab-vehicle-actions" class="tab-content hidden">
+         <h4>Painel de Controle</h4>
+         <div class="info-panel vehicle-status-panel">
+             <div class="info-item"><strong>Status:</strong> <span id="detail-status">Desligado</span></div>
+             <div class="info-item"><strong>Velocidade:</strong> <span id="detail-speed">0</span> km/h</div>
+         </div>
 
-            <!-- Aba para Registrar Serviço Passado -->
-            <div id="tab-register-maint" class="tab-content hidden">
-              <h4>Registrar um Serviço Já Realizado</h4>
-              <form id="register-maint-form" class="maintenance-section">
-                <div class="input-group"><label for="registroData">Data do Serviço:</label><input type="date" id="registroData" required /></div>
-                <div class="input-group"><label for="registroProblema">Problema/Serviço Realizado:</label><input type="text" id="registroProblema" required placeholder="Ex: Troca de óleo e filtros" /></div>
-                <div class="input-group"><label for="registroCusto">Custo Total (R$):</label><input type="number" id="registroCusto" step="0.01" min="0" required placeholder="150.50" /></div>
-                <div class="button-container"><button type="submit" class="btn btn-maintenance">Registrar</button></div>
-              </form>
-            </div>
+         <h4>Ações do Veículo</h4>
+         <div class="button-container">
+             <button id="btn-toggle-engine" class="btn btn-action">Ligar</button>
+             <button id="btn-accelerate" class="btn btn-action" disabled>Acelerar</button>
+             <button id="btn-brake" class="btn btn-action" disabled>Frear</button>
+         </div>
+
+         <!-- Controles Específicos -->
+         <div id="turbo-controls" class="specific-controls hidden">
+             <h4>Controles de Performance</h4>
+             <div class="button-container">
+                 <button id="btn-toggle-turbo" class="btn btn-maintenance">Ativar Turbo</button>
+             </div>
+         </div>
+         <div id="cargo-controls" class="specific-controls hidden">
+             <h4>Controles de Carga</h4>
+             <div class="info-item"><strong>Carga Atual:</strong> <span id="detail-cargo">0</span> kg</div>
+             <div class="button-container">
+                 <input type="number" id="cargo-amount" placeholder="kg" style="width: 100px; padding: 12px;">
+                 <button id="btn-load-cargo" class="btn btn-schedule">Carregar</button>
+                 <button id="btn-unload-cargo" class="btn btn-secondary">Descarregar</button>
+             </div>
+         </div>
+     </div>
+
+     <!-- Aba para Registrar Serviço Passado -->
+     <div id="tab-register-maint" class="tab-content hidden">
+         <!-- ... seu conteúdo existente ... -->
+     </div>
             
             <!-- Aba para Agendar Serviço Futuro -->
             <div id="tab-schedule-maint" class="tab-content hidden">
@@ -116,18 +134,15 @@
 
             <!-- Aba de Previsão do Tempo -->
             <div id="tab-weather" class="tab-content hidden">
-              <h4>Planeje sua Viagem: Previsão do Tempo</h4>
-              <div class="weather-input-area">
-                <input type="text" id="cidade-input" placeholder="Digite uma cidade e pressione Enter" />
-                <button id="btn-buscar-previsao" class="btn btn-info">Buscar</button>
-              </div>
-              <div id="previsao-tempo-resultado"><p>Informe uma cidade para ver a previsão para os próximos 5 dias.</p></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+  <h4>Planeje sua Viagem: Previsão do Tempo</h4>
+  <div class="weather-input-area">
+    <input type="text" id="cidade-input" placeholder="Digite uma cidade e pressione Enter" />
+    <button id="btn-buscar-previsao" class="btn btn-info">Buscar</button>
   </div>
+  <!-- LINHA A SER ADICIONADA -->
+  <div id="weather-filter-buttons" class="button-container"></div>
+  <div id="previsao-tempo-resultado"><p>Informe uma cidade para ver a previsão para os próximos 5 dias.</p></div>
+</div>
 
   <footer class="main-footer"><p>Projeto Garagem Inteligente © 2025</p></footer>
   <div id="notification-area" aria-live="polite"></div>

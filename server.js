@@ -206,5 +206,32 @@ app.get('/api/veiculos/:veiculoId/manutencoes', async (req, res) => {
         res.status(500).json({ message: "Erro interno do servidor ao buscar manutenções.", error: error.message });
     }
 });
+// =========================================================================
+//                  ROTA PROXY PARA O CLIMA
+// =========================================================================
+const axios = require('axios');
+
+app.get('/api/weather', async (req, res) => {
+    const { city } = req.query;
+    if (!city) {
+        return res.status(400).json({ message: "O nome da cidade é obrigatório." });
+    }
+
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
+
+    try {
+        const response = await axios.get(url);
+        res.status(200).json(response.data);
+    } catch (error) {
+        console.error("Erro ao buscar dados do clima:", error.response?.data || error.message);
+        res.status(error.response?.status || 500).json({ message: "Não foi possível obter a previsão do tempo." });
+    }
+});
+
+
+// --- Inicialização do Servidor ---
+async function startServer() {}
+// ... (o resto do seu arquivo continua aqui)
 
 startServer();
