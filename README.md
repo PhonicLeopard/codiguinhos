@@ -1,107 +1,15 @@
-# Garagem Inteligente PRO 🚗💨
+# Installation
+> `npm install --save @types/whatwg-url`
 
-## Visão Geral
-A Garagem Inteligente PRO é uma aplicação web interativa desenvolvida para simular o gerenciamento de uma garagem de veículos. Utilizando conceitos de Programação Orientada a Objetos (POO) em JavaScript puro, a aplicação permite aos usuários adicionar, visualizar, interagir e manter diferentes tipos de veículos (Carros Comuns, Carros Esportivos com turbo e Caminhões com capacidade de carga). Além disso, integra uma funcionalidade de **previsão do tempo para os próximos dias**, auxiliando no planejamento de viagens. Toda a informação da garagem é persistida localmente no navegador através da API LocalStorage, garantindo que os dados não sejam perdidos ao recarregar a página. A interface é construída com HTML semântico e estilizada com CSS moderno, incluindo um layout responsivo.
+# Summary
+This package contains type definitions for whatwg-url (https://github.com/jsdom/whatwg-url#readme).
 
-## Funcionalidades Principais ✨
-- **Adição de Veículos:** Permite adicionar diferentes tipos de veículos à garagem:
-  - Carro Comum
-  - Carro Esportivo (com funcionalidade de Turbo)
-  - Caminhão (com definição de Capacidade de Carga)
-- **Visualização da Garagem:** Lista todos os veículos presentes na garagem em uma barra lateral (sidebar).
-- **Seleção e Detalhes:** Ao selecionar um veículo na lista, exibe seus detalhes completos em um painel principal, incluindo:
-  - Imagem, Modelo, Cor, ID único.
-  - Status (Ligado/Desligado).
-  - Quilometragem (para Carros e derivados).
-  - Velocidade atual (com barra visual em relação à máxima).
-  - Status do Turbo (para Carros Esportivos).
-  - Carga Atual e Capacidade (para Caminhões).
-  - Histórico de Manutenções passadas.
-  - Agendamentos de Serviços futuros.
-- **Edição Rápida:** Permite alterar rapidamente o Modelo, Cor e URL da Imagem do veículo selecionado.
-- **Interação com Veículos (Ações):**
-  - Ligar / Desligar o motor (com validação de movimento para desligar).
-  - Acelerar (com comportamento diferenciado por tipo de veículo e influência de carga/turbo).
-  - Frear (com comportamento diferenciado por tipo de veículo e influência de carga).
-  - Buzinar (com sons diferentes por tipo de veículo - se implementado no áudio).
-  - Simular Rodagem (aumenta a quilometragem).
-- **Ações Específicas:**
-  - Ativar / Desativar Turbo (para Carros Esportivos).
-  - Carregar / Descarregar (para Caminhões, respeitando a capacidade).
-- **Gerenciamento de Manutenção:**
-  - Registrar serviços de manutenção já realizados (Tipo, Custo, Descrição).
-  - Agendar serviços futuros (Tipo, Data/Hora, Observações).
-- **Previsão do Tempo para Planejamento de Viagem:**
-  - Busca a previsão do tempo para os próximos dias para uma cidade informada.
-  - Utiliza o endpoint **"5 day / 3 hour forecast"** da API OpenWeatherMap.
-  - Exibe um resumo diário incluindo data, temperaturas mínima/máxima, descrição e ícone do tempo.
-  - **⚠️ ALERTA DE SEGURANÇA IMPORTANTE:** A chave da API OpenWeatherMap (API Key) está atualmente armazenada diretamente no código JavaScript do frontend (`weatherService.js`). **Esta é uma prática INSEGURA e NUNCA deve ser feita em aplicações de produção.** A chave fica exposta e pode ser facilmente roubada e utilizada indevidamente, podendo gerar custos ou bloqueio da chave.
-    - **Abordagem Correta (para produção):** A chave API deve ser armazenada e utilizada em um ambiente de backend (servidor). O frontend faria uma requisição para o seu próprio backend, e o backend, por sua vez, faria a requisição segura para a API OpenWeatherMap, adicionando a chave. Isso é conhecido como um "backend proxy". Alternativas incluem o uso de Serverless Functions.
-    - **Simplificação Didática:** Para fins puramente didáticos e simplificação do escopo desta atividade focada no frontend, a chave foi mantida no cliente.
-- **Persistência de Dados:** Todas as informações da garagem (veículos e seus históricos) são salvas automaticamente no LocalStorage do navegador.
-- **Feedback ao Usuário:** Notificações visuais (para sucessos, erros, avisos) e sonoras (para ações principais).
-- **Exclusão de Veículos:** Permite remover permanentemente um veículo da garagem.
-- **Interface Responsiva:** O layout se adapta a diferentes tamanhos de tela (desktop, tablet, mobile).
+# Details
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/whatwg-url.
 
-## Como Executar Localmente 🚀
-Este projeto é construído com HTML, CSS e JavaScript puro, utilizando módulos ES6.
+### Additional Details
+ * Last updated: Sat, 18 May 2024 21:06:54 GMT
+ * Dependencies: [@types/webidl-conversions](https://npmjs.com/package/@types/webidl-conversions)
 
-1.  **Clone o Repositório:**
-    ```bash
-    git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-    ```
-    *(Substitua `SEU-USUARIO/SEU-REPOSITORIO` pelo caminho real do seu repo no GitHub)*
-
-2.  **Navegue até a Pasta:**
-    ```bash
-    cd SEU-REPOSITORIO
-    ```
-
-3.  **Abra o Arquivo HTML:**
-    - A maneira mais simples é abrir o arquivo `index.html` diretamente no seu navegador web (Chrome, Firefox, Edge, etc.).
-    - **Importante (Módulos ES6):** Devido ao uso de `import/export` nos arquivos JavaScript (`type="module"`), alguns navegadores podem restringir o carregamento direto do `file:///` por razões de segurança (CORS). Se a aplicação não carregar corretamente (verifique o console F12 por erros relacionados a módulos ou CORS), é recomendado usar um servidor web local simples:
-        - Se você usa o VS Code, instale a extensão "Live Server" e clique com o botão direito no `index.html` e selecione "Open with Live Server".
-        - Alternativamente, use `npx serve` (se tiver Node.js/npm instalado) na pasta do projeto ou qualquer outro servidor HTTP simples.
-
-## Estrutura do Projeto 📁
-Use code with caution.
-Markdown
-GaragemInteligentePRO/
-├── index.html # Arquivo principal da interface do usuário
-├── style.css # Folha de estilos principal
-├── js/ # Pasta contendo todo o código JavaScript
-│ ├── main.js # Ponto de entrada: UI, eventos, inicialização
-│ ├── weatherService.js # Lógica para API OpenWeatherMap (previsão)
-│ ├── Manutencao.js # Definição da classe Manutencao
-│ ├── Veiculo.js # Definição da classe base Veiculo
-│ ├── Carro.js # Definição da classe Carro (herda de Veiculo)
-│ ├── CarroEsportivo.js # Definição da classe CarroEsportivo (herda de Carro)
-│ └── Caminhao.js # Definição da classe Caminhao (herda de Carro)
-├── sounds/ # Pasta para arquivos de áudio (feedback sonoro)
-│ ├── ligar.mp3
-│ ├── desligar.mp3
-│ ├── buzina_carro.mp3
-│ └── ... # Outros arquivos .mp3
-├── dados_veiculos_api.json # Dados simulados para a API de detalhes de veículos
-├── placeholder.png # Imagem padrão para veículos sem URL definida
-└── README.md # Este arquivo de documentação
-## Tecnologias Utilizadas 🛠️
-- **HTML5:** Estrutura semântica da página.
-- **CSS3:** Estilização e layout da interface.
-  - Variáveis CSS (Custom Properties): Para fácil manutenção do tema.
-  - Flexbox & Grid: Para organização do layout responsivo.
-- **JavaScript (ES6+):** Lógica principal da aplicação.
-  - Módulos ES6: Organização do código (`import/export`).
-  - Async/Await: Para chamadas de API assíncronas.
-  - Programação Orientada a Objetos (POO):
-    - Classes: Para modelar `Veiculo`, `Carro`, `CarroEsportivo`, `Caminhao`, `Manutencao`.
-    - Herança: Reutilização de código (`extends`).
-    - Polimorfismo: Métodos com comportamento específico por classe (ex: `getDisplayInfo`, `acelerar`).
-    - Encapsulamento: Agrupamento de dados e comportamento.
-  - DOM Manipulation: Interação com a estrutura HTML para atualizar a UI.
-  - Event Handling: Captura de interações do usuário (cliques, submits, etc.).
-- **APIs Externas:**
-  - OpenWeatherMap API: Para busca de previsão do tempo.
-- **LocalStorage API:** Persistência dos dados da garagem no navegador.
-- **JSON:** Serialização/Desserialização dos dados para o LocalStorage e comunicação com APIs.
-- **JSDoc:** Formato de comentário para documentação do código JavaScript.
+# Credits
+These definitions were written by [Alexander Marks](https://github.com/aomarks), [ExE Boss](https://github.com/ExE-Boss), and [BendingBender](https://github.com/BendingBender).
