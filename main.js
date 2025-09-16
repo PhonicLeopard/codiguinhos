@@ -1,5 +1,5 @@
 // ==========================================================================
-//                 GARAGEM INTELIGENTE PRO - SCRIPT FINAL E LIMPO
+//                 GARAGEM INTELIGENTE PRO - SCRIPT FINAL V8.0
 // ==========================================================================
 
 // --- Classes POO do Frontend ---
@@ -51,7 +51,7 @@ async function fetchAPI(endpoint, options = {}) {
         if (!response.ok) throw new Error(data.message || 'Erro do Servidor');
         return data;
     } catch (error) {
-        showNotification("Não foi possível conectar ao servidor. Verifique se ele está rodando.", "error");
+        showNotification(error.message, "error");
         console.error("ERRO NA API:", error);
         throw error;
     }
@@ -61,13 +61,16 @@ async function initializeGarage() {
     try {
         const vehiclesData = await fetchAPI('/veiculos');
         garage = vehiclesData.map(data => {
-            if (data.tipo === 'CarroEsportivo') return new CarroEsportivo(data);
-            if (data.tipo === 'Caminhao') return new Caminhao(data);
-            return new Veiculo(data);
+            let vehicle;
+            if (data.tipo === 'CarroEsportivo') vehicle = new CarroEsportivo(data);
+            else if (data.tipo === 'Caminhao') vehicle = new Caminhao(data);
+            else vehicle = new Veiculo(data);
+            vehicle.historicoManutencoes = (data.historicoManutencoes || []).map(m => new Manutencao(m));
+            return vehicle;
         });
         renderVehicleList();
     } catch (error) {
-        DOM.vehicleList.innerHTML = '<li class="placeholder">Falha ao carregar.</li>';
+        DOM.vehicleList.innerHTML = '<li class="placeholder">Falha ao carregar garagem.</li>';
     }
 }
 
@@ -100,8 +103,8 @@ function displaySelectedVehicleDetails() {
 function renderMaintenanceLists() {
     const v = currentlySelectedVehicle;
     if(!v) return;
-    const past = (v.historicoManutencoes || []).filter(m => !m.isFuture());
-    const future = (v.historicoManutencoes || []).filter(m => m.isFuture());
+    const past = (v.historicoManutencoes || []).filter(m => !m.isFuture()).sort((a, b) => new Date(b.data) - new Date(a.data));
+    const future = (v.historicoManutencoes || []).filter(m => m.isFuture()).sort((a, b) => new Date(a.data) - new Date(b.data));
     const render = (list, placeholder) => list.length ? list.map(item =>`<li>${item.getDetalhesFormatados()}</li>`).join('') : `<li class="placeholder">${placeholder}</li>`;
     DOM.maintenanceHistoryList.innerHTML = render(past, 'Sem histórico.');
     DOM.scheduleList.innerHTML = render(future, 'Sem agendamentos.');
@@ -126,9 +129,11 @@ function showNotification(message, type = "success", duration = 4000) {
 function handleVehicleSelection(id) {
     const vehicle = garage.find(v => v.id === id);
     if (!vehicle) return;
-    // Reset state for the newly selected vehicle
-    vehicle.ligado = false;
-    vehicle.velocidade = 0;
+    // Reseta o estado do veículo para uma experiência consistente
+    if (currentlySelectedVehicle) {
+        currentlySelectedVehicle.ligado = false;
+        currentlySelectedVehicle.velocidade = 0;
+    }
     currentlySelectedVehicle = vehicle;
     renderVehicleList();
     displaySelectedVehicleDetails();
@@ -139,10 +144,7 @@ function handleVehicleSelection(id) {
 async function handleAddFormSubmit(event) {
     event.preventDefault();
     const data = {
-        tipo: DOM.addVehicleType.value,
-        modelo: DOM.addModelo.value.trim(),
-        cor: DOM.addCor.value.trim(),
-        imagem: DOM.addImagem.value.trim() || 'placeholder.png',
+        tipo: DOM.addVehicleType.value, modelo: DOM.addModelo.value.trim(), cor: DOM.addCor.value.trim(), imagem: DOM.addImagem.value.trim() || 'placeholder.png',
         ...(DOM.addVehicleType.value === 'Caminhao' && { capacidadeCarga: Number(DOM.addCapacidade.value) })
     };
     if (!data.tipo || !data.modelo || !data.cor) return showNotification("Preencha todos os campos.", "error");
@@ -168,7 +170,7 @@ async function handleUpdateQuickEdit() {
 }
 
 async function handleDeleteVehicle() {
-    if (!currentlySelectedVehicle || !confirm('Excluir?')) return;
+    if (!currentlySelectedVehicle || !confirm('Tem certeza que deseja excluir este veículo?')) return;
     try {
         await fetchAPI(`/veiculos/${currentlySelectedVehicle.id}`, { method: 'DELETE' });
         showPanelContent('placeholder');
@@ -216,10 +218,8 @@ function renderVehicleState() {
     DOM.btnToggleEngine.textContent = v.ligado ? 'Desligar' : 'Ligar';
     DOM.btnAccelerate.disabled = !v.ligado;
     DOM.btnBrake.disabled = !v.ligado || v.velocidade === 0;
-
     DOM.turboControls.classList.toggle('hidden', !(v instanceof CarroEsportivo));
     if (v instanceof CarroEsportivo) DOM.btnToggleTurbo.textContent = v.turboAtivado ? 'Desativar Turbo' : 'Ativar Turbo';
-    
     DOM.cargoControls.classList.toggle('hidden', !(v instanceof Caminhao));
     if (v instanceof Caminhao) DOM.detailCargo.textContent = v.cargaAtual;
 }
