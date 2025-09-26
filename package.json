@@ -30,7 +30,14 @@
     },
     "scripts": {},
     "dependencies": {
-        "@types/webidl-conversions": "*"
+        "@types/webidl-conversions": "*",
+        "axios": "^1.12.2",
+        "bcryptjs": "^3.0.2",
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.2",
+        "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.18.2"
     },
     "typesPublisherContentHash": "c6cfac1bbd7b2ef315fdad11fc9bdb6a8f0ae2b1c3ff057cfca7bc9880eeaa9d",
     "typeScriptVersion": "4.7"

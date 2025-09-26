@@ -10,7 +10,12 @@
   <header class="main-header">
     <h1>Garagem Inteligente PRO 🚗💨</h1>
     <p>Gerenciamento Completo de Veículos e Manutenções</p>
+    <div class="auth-links">
+      <button id="btn-show-login" class="btn btn-secondary">Login</button>
+      <button id="btn-show-register" class="btn btn-info">Registrar</button>
+    </div>
   </header>
+</header>
 
   <div class="main-content-area">
     <!-- BARRA LATERAL -->
@@ -154,6 +159,34 @@
       </div>
     </main>
   </div>
+  <div id="modal-backdrop" class="hidden"></div>
+
+<!-- O Modal de Registro -->
+<div id="register-modal" class="modal hidden">
+    <button class="modal-close-btn" id="register-modal-close-btn">&times;</button>
+    <h2>Criar Nova Conta</h2>
+    <form id="register-form">
+        <div class="input-group">
+            <label for="register-name">Nome Completo:</label>
+            <input type="text" id="register-name" required />
+        </div>
+        <div class="input-group">
+            <label for="register-email">E-mail:</label>
+            <input type="email" id="register-email" required />
+        </div>
+        <div class="input-group">
+            <label for="register-password">Senha (mín. 6 caracteres):</label>
+            <input type="password" id="register-password" required />
+        </div>
+        <div class="input-group">
+            <label for="register-photo">URL da Foto (Opcional):</label>
+            <input type="url" id="register-photo" placeholder="https://exemplo.com/sua-foto.png"/>
+        </div>
+        <div class="button-container">
+            <button type="submit" class="btn btn-create">Criar Conta</button>
+        </div>
+    </form>
+</div>
 
   <footer class="main-footer"><p>Projeto Garagem Inteligente © 2025</p></footer>
   <div id="notification-area" aria-live="polite"></div>
