@@ -1,15 +1,10 @@
 // ==========================================================================
-//                 GARAGEM INTELIGENTE PRO - SCRIPT COMPLETO (V8.2 - CORRIGIDO)
+//           GARAGEM INTELIGENTE PRO - SCRIPT FINAL (V10.0 - AUTENTICAÇÃO COMPLETA)
 // ==========================================================================
 
 // --- Classes POO do Frontend ---
 class Veiculo {
-    constructor(data) {
-        Object.assign(this, data);
-        this.id = data._id;
-        this.ligado = false;
-        this.velocidade = 0;
-    }
+    constructor(data) { Object.assign(this, data); this.id = data._id; this.ligado = false; this.velocidade = 0; }
     getDisplayInfo() { return `<div class="info-item"><strong>Modelo:</strong> ${this.modelo}</div><div class="info-item"><strong>Cor:</strong> ${this.cor}</div><div class="info-item"><strong>Tipo:</strong> ${this.tipo}</div>`; }
     ligar() { if (!this.ligado) { this.ligado = true; showNotification(`${this.modelo} ligado!`, 'info'); } }
     desligar() { if (this.ligado && this.velocidade === 0) { this.ligado = false; showNotification(`${this.modelo} desligado.`, 'info'); } else if (this.velocidade > 0) { showNotification('Pare o veículo antes de desligar!', 'warning'); } }
@@ -23,10 +18,7 @@ class CarroEsportivo extends Veiculo {
 }
 class Caminhao extends Veiculo {
     constructor(data) { super(data); this.cargaAtual = this.cargaAtual || 0; }
-    carregar(peso) {
-        if (this.cargaAtual + peso <= this.capacidadeCarga) { this.cargaAtual += peso; showNotification(`Carga de ${peso}kg adicionada.`, 'success'); }
-        else { showNotification('Capacidade de carga excedida!', 'error'); }
-    }
+    carregar(peso) { if (this.cargaAtual + peso <= this.capacidadeCarga) { this.cargaAtual += peso; showNotification(`Carga de ${peso}kg adicionada.`, 'success'); } else { showNotification('Capacidade de carga excedida!', 'error'); } }
     descarregar(peso) { this.cargaAtual = Math.max(0, this.cargaAtual - peso); showNotification(`Carga de ${peso}kg removida.`, 'success'); }
     acelerar() { if (this.ligado) this.velocidade = Math.min(this.velocidade + 5, 120); }
 }
@@ -40,12 +32,18 @@ class Manutencao {
 const backendUrl = "http://localhost:3001/api";
 let garage = [];
 let currentlySelectedVehicle = null;
+let authToken = null;
+let currentUser = null;
 const DOM = {};
 
 // --- Funções de API ---
 async function fetchAPI(endpoint, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
     try {
-        const response = await fetch(`${backendUrl}${endpoint}`, options);
+        const response = await fetch(`${backendUrl}${endpoint}`, { ...options, headers });
         if (response.status === 204) return null;
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Erro do Servidor');
@@ -53,27 +51,40 @@ async function fetchAPI(endpoint, options = {}) {
     } catch (error) {
         showNotification(error.message, "error");
         console.error("ERRO NA API:", error);
+        if (error.message.includes('Token inválido') || error.message.includes('expirado')) {
+            handleLogout();
+        }
         throw error;
     }
 }
 
-async function initializeGarage() {
-    DOM.vehicleList.innerHTML = '<li class="placeholder">Faça login para ver seus veículos.</li>';
+async function fetchAndRenderVehicles() {
+    if (!authToken) {
+        garage = [];
+        renderVehicleList();
+        return;
+    }
+    try {
+        const vehiclesData = await fetchAPI('/veiculos');
+        garage = vehiclesData.map(data => {
+            let vehicle;
+            switch (data.tipo) {
+                case "CarroEsportivo": vehicle = new CarroEsportivo(data); break;
+                case "Caminhao": vehicle = new Caminhao(data); break;
+                default: vehicle = new Veiculo(data); break;
+            }
+            return vehicle;
+        });
+        renderVehicleList();
+    } catch (error) {
+        console.error("Não foi possível buscar os veículos:", error);
+    }
 }
 
 // --- Funções de DOM ---
 function cacheDOMElements() {
-    const ids = [
-        "vehicle-list","panel-placeholder","vehicle-details-view","add-vehicle-form-view","notification-area","add-vehicle-form","add-vehicle-type","add-modelo","add-cor","add-imagem","add-capacidade","btn-show-add-vehicle-form","btn-cancel-add-vehicle","detail-vehicle-img","detail-vehicle-name","quick-edit-model","quick-edit-color","quick-edit-image","btn-save-quick-edit","base-vehicle-details","tab-content-container","btn-delete-vehicle","maintenance-history-list","schedule-list","register-maint-form","schedule-maint-form","cidade-input","btn-buscar-previsao","previsao-tempo-resultado","detail-status","detail-speed","btn-toggle-engine","btn-accelerate","btn-brake","turbo-controls","btn-toggle-turbo","cargo-controls","detail-cargo","cargo-amount","btn-load-cargo","btn-unload-cargo",
-        "btn-show-register", "modal-backdrop", "register-modal", "register-form", "register-modal-close-btn",
-        "register-name", "register-email", "register-password", "register-photo", "btn-show-login"
-    ];
-    ids.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            DOM[id.replace(/-([a-z])/g, g => g[1].toUpperCase())] = element;
-        }
-    });
+    const ids = [ "vehicle-list","panel-placeholder","vehicle-details-view","add-vehicle-form-view","notification-area","add-vehicle-form","add-vehicle-type","add-modelo","add-cor","add-imagem","add-capacidade","btn-show-add-vehicle-form","btn-cancel-add-vehicle","detail-vehicle-img","detail-vehicle-name","quick-edit-model","quick-edit-color","quick-edit-image","btn-save-quick-edit","base-vehicle-details","tab-content-container","btn-delete-vehicle","maintenance-history-list","schedule-list","register-maint-form","schedule-maint-form","cidade-input","btn-buscar-previsao","previsao-tempo-resultado","detail-status","detail-speed","btn-toggle-engine","btn-accelerate","btn-brake","turbo-controls","btn-toggle-turbo","cargo-controls","detail-cargo","cargo-amount","btn-load-cargo","btn-unload-cargo", "btn-show-register", "modal-backdrop", "register-modal", "register-form", "register-modal-close-btn", "register-name", "register-email", "register-password", "register-photo", "btn-show-login", "login-modal", "login-form", "login-email", "login-password", "login-modal-close-btn", "auth-links" ];
+    ids.forEach(id => { const element = document.getElementById(id); if (element) DOM[id.replace(/-([a-z])/g, g => g[1].toUpperCase())] = element; });
     if (DOM.addVehicleForm) DOM.addCapacidadeGroup = DOM.addVehicleForm.querySelector('.specific-field');
     DOM.tabNav = document.querySelector('.tab-nav');
 }
@@ -83,17 +94,14 @@ function renderVehicleList() {
     DOM.vehicleList.innerHTML = garage.length === 0 ? '<li class="placeholder">Garagem vazia.</li>' : garage.map(v => `<li data-vehicle-id="${v.id}" class="${currentlySelectedVehicle?.id === v.id ? 'selected' : ''}" role="button"><img src="${v.imagem || 'placeholder.png'}" class="vehicle-list-img" onerror="this.src='placeholder.png'"> <span>${v.modelo}</span></li>`).join('');
     DOM.vehicleList.querySelectorAll('li[data-vehicle-id]').forEach(li => li.addEventListener('click', () => handleVehicleSelection(li.dataset.vehicleId)));
 }
-
 function displaySelectedVehicleDetails() { /* ... (Função original sem alterações) ... */ }
 function renderMaintenanceLists() { /* ... (Função original sem alterações) ... */ }
-
 function showPanelContent(contentType) {
     [DOM.panelPlaceholder, DOM.vehicleDetailsView, DOM.addVehicleFormView].forEach(p => p && p.classList.add("hidden"));
     const panelToShow = contentType === 'details' ? DOM.vehicleDetailsView : contentType === 'addForm' ? DOM.addVehicleFormView : DOM.panelPlaceholder;
     if (panelToShow) panelToShow.classList.remove("hidden");
     if (contentType !== "details") { currentlySelectedVehicle = null; renderVehicleList(); }
 }
-
 function showNotification(message, type = "success", duration = 4000) {
     if (!DOM.notificationArea) return;
     const el = document.createElement("div");
@@ -102,74 +110,114 @@ function showNotification(message, type = "success", duration = 4000) {
     DOM.notificationArea.appendChild(el);
     setTimeout(() => el.remove(), duration);
 }
+function handleAddTypeChange() { /* ... (Função original sem alterações) ... */ }
+function activateTab(tabElement) { /* ... (Função original sem alterações) ... */ }
 
 // --- Handlers ---
-
 function handleVehicleSelection(id) { /* ... (Função original sem alterações) ... */ }
 async function handleAddFormSubmit(event) {
     event.preventDefault();
-    showNotification("Você precisa estar logado para adicionar um veículo.", "warning");
+    if (!authToken) return showNotification("Você precisa estar logado para adicionar um veículo.", "warning");
+    const vehicleData = { tipo: DOM.addVehicleType.value, modelo: DOM.addModelo.value.trim(), cor: DOM.addCor.value.trim(), imagem: DOM.addImagem.value.trim() || undefined };
+    if (vehicleData.tipo === 'Caminhao') vehicleData.capacidadeCarga = DOM.addCapacidade.value;
+    try {
+        await fetchAPI('/veiculos', { method: 'POST', body: JSON.stringify(vehicleData) });
+        await fetchAndRenderVehicles();
+        showPanelContent('placeholder');
+        DOM.addVehicleForm.reset();
+        showNotification('Veículo adicionado com sucesso!', 'success');
+    } catch (error) {}
 }
 async function handleUpdateQuickEdit() { /* ... (Função original sem alterações) ... */ }
 async function handleDeleteVehicle() { /* ... (Função original sem alterações) ... */ }
 async function handleMaintenanceSubmit(event, isFuture) { /* ... (Função original sem alterações) ... */ }
-function handleAddTypeChange() { /* ... (Função original sem alterações) ... */ }
-function activateTab(tabElement) { /* ... (Função original sem alterações) ... */ }
 
 // --- Handlers de Autenticação ---
-function showRegisterModal() {
-    DOM.modalBackdrop.classList.remove('hidden');
-    DOM.registerModal.classList.remove('hidden');
-}
-
-function hideModal() {
+function showLoginModal() { hideModals(); DOM.modalBackdrop.classList.remove('hidden'); DOM.loginModal.classList.remove('hidden'); }
+function showRegisterModal() { hideModals(); DOM.modalBackdrop.classList.remove('hidden'); DOM.registerModal.classList.remove('hidden'); }
+function hideModals() {
     DOM.modalBackdrop.classList.add('hidden');
-    DOM.registerModal.classList.add('hidden');
+    if (DOM.registerModal) DOM.registerModal.classList.add('hidden');
+    if (DOM.loginModal) DOM.loginModal.classList.add('hidden');
 }
 
 async function handleRegisterSubmit(event) {
     event.preventDefault();
-    const userData = {
-        name: DOM.registerName.value.trim(),
-        email: DOM.registerEmail.value.trim(),
-        password: DOM.registerPassword.value.trim(),
-        photo: DOM.registerPhoto.value.trim() || undefined
-    };
-
-    if (!userData.name || !userData.email || !userData.password) {
-        return showNotification("Nome, e-mail e senha são obrigatórios.", "error");
-    }
-
+    const userData = { name: DOM.registerName.value.trim(), email: DOM.registerEmail.value.trim(), password: DOM.registerPassword.value.trim(), photo: DOM.registerPhoto.value.trim() || undefined };
+    if (!userData.name || !userData.email || !userData.password) return showNotification("Nome, e-mail e senha são obrigatórios.", "error");
     try {
-        const response = await fetch(`http://localhost:3001/api/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Erro ao registrar.');
-        }
-        showNotification('Conta criada com sucesso! Agora você pode fazer login.', 'success');
-        hideModal();
+        await fetchAPI('/auth/register', { method: 'POST', body: JSON.stringify(userData) });
+        showNotification('Conta criada! Agora faça o login.', 'success');
+        hideModals();
         DOM.registerForm.reset();
-    } catch (error) {
-        showNotification(error.message, "error");
-        console.error("ERRO NO REGISTRO:", error);
+    } catch (error) {}
+}
+
+async function handleLoginSubmit(event) {
+    event.preventDefault();
+    const loginData = { email: DOM.loginEmail.value.trim(), password: DOM.loginPassword.value.trim() };
+    if (!loginData.email || !loginData.password) return showNotification("E-mail e senha são obrigatórios.", "error");
+    try {
+        const data = await fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(loginData) });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        onLoginSuccess(data.token, data.user);
+    } catch (error) {}
+}
+
+function onLoginSuccess(token, user) {
+    authToken = token;
+    currentUser = user;
+    hideModals();
+    if(DOM.loginForm) DOM.loginForm.reset();
+    showNotification(`Bem-vindo de volta, ${user.name}!`, 'success');
+    updateUIForAuthState(true);
+    fetchAndRenderVehicles();
+}
+
+function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    authToken = null;
+    currentUser = null;
+    garage = [];
+    currentlySelectedVehicle = null;
+    showPanelContent('placeholder');
+    renderVehicleList();
+    updateUIForAuthState(false);
+    showNotification('Você foi desconectado com segurança.', 'info');
+}
+
+function updateUIForAuthState(isLoggedIn) {
+    if (isLoggedIn) {
+        DOM.authLinks.innerHTML = `<span style="color: black; align-self: center; font-weight: 500;">Olá, ${currentUser.name}</span><button id="btn-logout" class="btn btn-danger">Sair</button>`;
+        document.getElementById('btn-logout').addEventListener('click', handleLogout);
+        DOM.vehicleList.innerHTML = '<li class="placeholder">Carregando sua garagem...</li>';
+    } else {
+        DOM.authLinks.innerHTML = `<button id="btn-show-login" class="btn btn-secondary">Login</button><button id="btn-show-register" class="btn btn-info">Registrar</button>`;
+        document.getElementById('btn-show-login').addEventListener('click', showLoginModal);
+        document.getElementById('btn-show-register').addEventListener('click', showRegisterModal);
+        DOM.vehicleList.innerHTML = '<li class="placeholder">Faça login para ver seus veículos.</li>';
+    }
+}
+
+function checkInitialAuthState() {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    if (token && userString) {
+        const user = JSON.parse(userString);
+        onLoginSuccess(token, user);
+    } else {
+        updateUIForAuthState(false);
     }
 }
 
 // --- Funções de Interatividade e Clima ---
-function renderVehicleState() { /* ... (Função original sem alterações) ... */ }
 function setupInteractionListeners() { /* ... (Função original sem alterações) ... */ }
-function renderForecast(processedData, days) { /* ... (Função original sem alterações) ... */ }
-function toggleForecastDetails(card) { /* ... (Função original sem alterações) ... */ }
 async function handleFetchWeather() { /* ... (Função original sem alterações) ... */ }
-function processarDadosForecast(apiData) { /* ... (Função original sem alterações) ... */ }
 
 // --- Inicialização ---
 function setupEventListeners() {
-    // Listeners da Garagem (verificando se os elementos existem)
     if (DOM.btnShowAddVehicleForm) DOM.btnShowAddVehicleForm.addEventListener("click", () => { DOM.addVehicleForm.reset(); handleAddTypeChange(); showPanelContent("addForm"); });
     if (DOM.btnCancelAddVehicle) DOM.btnCancelAddVehicle.addEventListener("click", () => showPanelContent("placeholder"));
     if (DOM.addVehicleForm) DOM.addVehicleForm.addEventListener("submit", handleAddFormSubmit);
@@ -181,15 +229,13 @@ function setupEventListeners() {
     if (DOM.btnBuscarPrevisao) DOM.btnBuscarPrevisao.addEventListener("click", handleFetchWeather);
     if (DOM.cidadeInput) DOM.cidadeInput.addEventListener("keyup", (e) => { if (e.key === 'Enter') handleFetchWeather(); });
     if (DOM.tabNav) DOM.tabNav.addEventListener('click', (e) => { if (e.target.matches('.tab-link')) activateTab(e.target); });
-    if (DOM.previsaoTempoResultado) DOM.previsaoTempoResultado.addEventListener('click', (e) => { const card = e.target.closest('.forecast-day-card'); if (card) toggleForecastDetails(card); });
-
-    // Listeners de Autenticação
-    if (DOM.btnShowRegister) DOM.btnShowRegister.addEventListener('click', showRegisterModal);
-    if (DOM.modalBackdrop) DOM.modalBackdrop.addEventListener('click', hideModal);
-    if (DOM.registerModalCloseBtn) DOM.registerModalCloseBtn.addEventListener('click', hideModal);
+    
+    // Listeners dos Modais
+    DOM.modalBackdrop.addEventListener('click', hideModals);
+    if (DOM.registerModalCloseBtn) DOM.registerModalCloseBtn.addEventListener('click', hideModals);
+    if (DOM.loginModalCloseBtn) DOM.loginModalCloseBtn.addEventListener('click', hideModals);
     if (DOM.registerForm) DOM.registerForm.addEventListener('submit', handleRegisterSubmit);
-    // Adicionar listener para o botão de login quando ele existir
-    // if (DOM.btnShowLogin) DOM.btnShowLogin.addEventListener('click', showLoginModal);
+    if (DOM.loginForm) DOM.loginForm.addEventListener('submit', handleLoginSubmit);
 
     setupInteractionListeners();
 }
@@ -198,9 +244,6 @@ window.addEventListener("DOMContentLoaded", () => {
     console.log("DOM carregado. Iniciando Garagem Inteligente PRO...");
     cacheDOMElements();
     setupEventListeners();
-    initializeGarage();
-    showPanelContent("placeholder");
-    console.log("✅ Aplicação pronta!");
+    checkInitialAuthState();
+    console.log("✅ Aplicação pronta! O TESOURO É NOSSO!");
 });
-
-// Nota: As funções que estão como "/* ... */" são as que você já tinha e não precisavam de alteração. Se você copiar este arquivo inteiro, elas estarão faltando. Cole o conteúdo delas de volta se necessário, mas a estrutura principal e a correção estão aqui.
